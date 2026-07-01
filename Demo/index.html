@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>茶烟起处 · 交互原型</title>
+<style>
+:root {
+  --ink: #2C2C2C;
+  --cinnabar: #C73E3A;
+  --stone-blue: #1661AB;
+  --gamboge: #C8A44E;
+  --flower-green: #3A6B4C;
+  --rouge: #9B1B30;
+  --ochre: #8B5E3C;
+  --bamboo: #5B8C5A;
+  --moon-white: #D6E4F0;
+  --parchment: #F5F0E8;
+  --light-ink: #8B8682;
+  --gold: #B8962E;
+  --bg: #F7F2E9;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: "Noto Serif SC", "SimSun", "STSong", "KaiTi", serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#app {
+  width: 420px;
+  max-width: 100vw;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #F0EBE0 0%, #EDE7D9 30%, #E8E2D2 100%);
+}
+
+/* ===== 水墨背景 ===== */
+.ink-wash {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.12;
+  pointer-events: none;
+}
+.mountain-bg {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 55%;
+  pointer-events: none;
+}
+.mountain-layer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  opacity: 0.08;
+}
+.mountain-layer.l1 { height: 60%; background: radial-gradient(ellipse at 50% 100%, var(--ink) 0%, transparent 70%); }
+.mountain-layer.l2 { height: 45%; left: -15%; width: 130%; background: radial-gradient(ellipse at 35% 100%, var(--ink) 0%, transparent 60%); }
+.mountain-layer.l3 { height: 30%; left: -30%; width: 160%; background: radial-gradient(ellipse at 60% 100%, var(--ink) 0%, transparent 50%); }
+
+/* ===== 页面容器 ===== */
+.page {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px;
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+.page.hidden { opacity: 0; transform: translateY(30px); pointer-events: none; }
+.page:not(.hidden) { opacity: 1; transform: translateY(0); }
+
+/* ===== 标题页 ===== */
+#title-page {
+  background: radial-gradient(ellipse at 50% 60%, rgba(199,62,58,0.06) 0%, transparent 70%),
+              linear-gradient(180deg, #F4EFE6 0%, #F0EBE0 50%, #EBE4D5 100%);
+}
+.title-seal {
+  width: 100px; height: 100px;
+  border: 3px solid var(--cinnabar); border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 42px; color: var(--cinnabar);
+  margin-bottom: 24px;
+  position: relative;
+  transform: rotate(-3deg);
+}
+.title-seal::after {
+  content: ''; position: absolute;
+  inset: 6px; border: 1px solid rgba(199,62,58,0.3); border-radius: 4px;
+}
+.game-title {
+  font-size: 32px; font-weight: normal;
+  letter-spacing: 8px; color: var(--ink);
+  margin-bottom: 8px; text-align: center;
+}
+.game-subtitle {
+  font-size: 14px; color: var(--light-ink);
+  letter-spacing: 4px; margin-bottom: 48px;
+}
+.btn-stamp {
+  padding: 14px 48px;
+  background: transparent;
+  border: 2px solid var(--ink);
+  color: var(--ink);
+  font-family: inherit; font-size: 16px;
+  letter-spacing: 4px; cursor: pointer;
+  position: relative; transition: all 0.3s;
+}
+.btn-stamp:hover { background: rgba(44,44,44,0.05); }
+.btn-stamp:active { background: rgba(44,44,44,0.1); transform: scale(0.97); }
+
+/* ===== 茶馆场景 ===== */
+.scene-header {
+  width: 100%; text-align: center; margin-bottom: 16px;
+  padding-top: 12px;
+}
+.scene-header .shop-sign {
+  font-size: 22px; letter-spacing: 6px; color: var(--ink);
+  display: inline-block; padding: 6px 24px;
+  border-bottom: 1px solid var(--light-ink);
+  border-top: 1px solid var(--light-ink);
+}
+.scene-info {
+  font-size: 12px; color: var(--light-ink); letter-spacing: 2px;
+  margin-top: 6px;
+}
+
+/* 茶馆画面区 */
+.tea-room {
+  width: 100%; height: 200px; position: relative;
+  margin-bottom: 12px; overflow: hidden;
+  border: 1px solid rgba(44,44,44,0.1);
+  background: linear-gradient(180deg, rgba(214,228,240,0.3) 0%, rgba(245,240,232,0.8) 60%, rgba(139,94,60,0.15) 100%);
+}
+.tea-room .window-frame { position: absolute; top: 10px; right: 15px; width: 50px; height: 70px; border: 1px solid rgba(44,44,44,0.15); }
+.tea-room .table { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); width: 120px; height: 6px; background: rgba(139,94,60,0.3); border-radius: 3px; }
+.tea-room .teapot-silhouette { position: absolute; bottom: 38px; left: 50%; transform: translateX(-50%); width: 30px; height: 24px; background: rgba(44,44,44,0.2); border-radius: 40% 40% 30% 30%; }
+.tea-room .steam { position: absolute; bottom: 65px; left: 50%; transform: translateX(-50%); font-size: 28px; opacity: 0.3; animation: steamRise 3s ease-in-out infinite; }
+@keyframes steamRise {
+  0%,100% { opacity: 0.15; transform: translateX(-50%) translateY(0); }
+  50% { opacity: 0.35; transform: translateX(-50%) translateY(-12px); }
+}
+.tea-room .customer-area {
+  position: absolute; bottom: 28px; right: 45px;
+  width: 44px; height: 50px;
+}
+.tea-room .customer-silhouette {
+  width: 100%; height: 100%;
+  background: rgba(44,44,44,0.12); border-radius: 50% 50% 30% 30%;
+  position: relative;
+}
+.customer-silhouette::after {
+  content: ''; position: absolute; bottom: -6px; left: 20%; width: 60%; height: 6px;
+  background: rgba(44,44,44,0.1); border-radius: 50%;
+}
+.customer-label {
+  position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%);
+  font-size: 11px; color: var(--ochre); white-space: nowrap; letter-spacing: 1px;
+}
+.arrive-anim { animation: npcArrive 1.5s ease-out; }
+@keyframes npcArrive {
+  0% { opacity: 0; transform: translateX(30px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+/* ===== 对话区 ===== */
+.dialogue-area {
+  width: 100%; min-height: 80px;
+  padding: 16px 20px;
+  background: rgba(245,240,232,0.9);
+  border: 1px solid rgba(44,44,44,0.1);
+  position: relative; margin-bottom: 10px;
+}
+.dialogue-speaker {
+  font-size: 12px; color: var(--light-ink); letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+.dialogue-text {
+  font-size: 15px; line-height: 1.8; letter-spacing: 1px;
+  color: var(--ink); position: relative;
+}
+.dialogue-text .typing-cursor::after {
+  content: '|'; animation: blink 0.8s infinite; color: var(--ink); margin-left: 2px;
+}
+@keyframes blink { 50% { opacity: 0; } }
+.dialogue-choices {
+  margin-top: 12px; display: flex; flex-direction: column; gap: 8px;
+}
+.choice-btn {
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid rgba(44,44,44,0.2);
+  color: var(--ink);
+  font-family: inherit; font-size: 14px; text-align: left;
+  letter-spacing: 1px; cursor: pointer;
+  transition: all 0.2s;
+}
+.choice-btn:hover { border-color: var(--stone-blue); color: var(--stone-blue); }
+.choice-btn:active { background: rgba(22,97,171,0.05); }
+.tap-hint {
+  text-align: center; font-size: 12px; color: var(--light-ink);
+  margin-top: 8px; animation: pulse 2s infinite;
+}
+@keyframes pulse { 50% { opacity: 0.4; } }
+
+/* ===== 泡茶交互 ===== */
+.brew-panel {
+  width: 100%; padding: 20px;
+  background: rgba(245,240,232,0.95);
+  border: 1px solid rgba(44,44,44,0.12);
+  border-radius: 2px;
+}
+.brew-title {
+  font-size: 16px; letter-spacing: 4px; text-align: center;
+  color: var(--ink); margin-bottom: 4px;
+}
+.brew-step-indicator {
+  font-size: 12px; color: var(--light-ink); text-align: center;
+  letter-spacing: 2px; margin-bottom: 16px;
+}
+.brew-content { min-height: 100px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.brew-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; width: 100%;
+}
+.brew-item {
+  padding: 12px 8px;
+  border: 1px solid rgba(44,44,44,0.15);
+  text-align: center; cursor: pointer;
+  transition: all 0.2s; font-size: 13px; letter-spacing: 1px;
+  background: transparent;
+  font-family: inherit; color: var(--ink);
+}
+.brew-item:hover { border-color: var(--ochre); background: rgba(139,94,60,0.05); }
+.brew-item.selected { border-color: var(--ochre); background: rgba(139,94,60,0.1); color: var(--ochre); }
+.brew-item.picked { border-color: var(--flower-green); background: rgba(58,107,76,0.08); color: var(--flower-green); pointer-events: none; }
+
+/* 温度滑块 */
+.temp-slider-wrap { width: 100%; text-align: center; }
+.temp-label { font-size: 13px; color: var(--ink); letter-spacing: 2px; margin-bottom: 8px; }
+.temp-display { font-size: 28px; margin: 8px 0; transition: color 0.3s; }
+.temp-display.cold { color: var(--stone-blue); }
+.temp-display.warm { color: var(--ochre); }
+.temp-display.hot { color: var(--cinnabar); }
+input[type=range] {
+  -webkit-appearance: none; width: 80%; height: 4px;
+  background: linear-gradient(90deg, var(--stone-blue), var(--ochre), var(--cinnabar));
+  border-radius: 2px; outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 28px; height: 28px;
+  background: var(--bg); border: 2px solid var(--ink);
+  border-radius: 50%; cursor: pointer;
+}
+
+/* 注水/出汤动画 */
+.brew-action-area {
+  text-align: center; padding: 20px;
+}
+.brew-animation {
+  font-size: 48px; margin-bottom: 12px;
+  animation: pourAnim 2s ease-in-out infinite;
+}
+@keyframes pourAnim {
+  0%,100% { opacity: 0.7; transform: rotate(-5deg); }
+  50% { opacity: 1; transform: rotate(5deg); }
+}
+.brew-timer {
+  font-size: 36px; color: var(--ink); letter-spacing: 4px;
+  margin: 12px 0;
+}
+.brew-action-btn {
+  padding: 12px 36px;
+  background: transparent;
+  border: 2px solid var(--ink);
+  color: var(--ink);
+  font-family: inherit; font-size: 15px;
+  letter-spacing: 3px; cursor: pointer;
+  transition: all 0.3s;
+}
+.brew-action-btn:hover { background: rgba(44,44,44,0.05); }
+.brew-action-btn.teahouse { border-color: var(--ochre); color: var(--ochre); }
+
+/* ===== 结果面板 ===== */
+.result-panel {
+  width: 100%; padding: 24px; text-align: center;
+  background: rgba(245,240,232,0.95);
+  border: 1px solid rgba(44,44,44,0.12);
+}
+.result-grade {
+  font-size: 48px; margin-bottom: 8px; letter-spacing: 4px;
+}
+.result-grade.perfect { color: var(--cinnabar); }
+.result-grade.good { color: var(--ochre); }
+.result-grade.ok { color: var(--stone-blue); }
+.result-comment {
+  font-size: 15px; color: var(--ink); line-height: 1.8;
+  letter-spacing: 1px; margin-bottom: 16px;
+}
+
+/* ===== 碎片弹出 ===== */
+.fragment-popup {
+  position: fixed; inset: 0;
+  background: rgba(44,44,44,0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.5s ease;
+}
+@keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+.fragment-card {
+  width: 280px; padding: 32px 24px;
+  background: var(--parchment);
+  border: 2px solid var(--gold);
+  text-align: center;
+  animation: cardIn 0.6s ease;
+  position: relative;
+}
+@keyframes cardIn {
+  0% { transform: scale(0.8) rotate(-5deg); opacity: 0; }
+  60% { transform: scale(1.05) rotate(1deg); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+.fragment-icon {
+  font-size: 40px; margin-bottom: 12px;
+}
+.fragment-name {
+  font-size: 18px; color: var(--ink); letter-spacing: 3px; margin-bottom: 6px;
+}
+.fragment-desc {
+  font-size: 13px; color: var(--light-ink); line-height: 1.8; margin-bottom: 16px;
+}
+.fragment-type {
+  font-size: 11px; color: var(--gold); letter-spacing: 2px;
+  display: inline-block; padding: 2px 12px; border: 1px solid var(--gold);
+}
+
+/* ===== 滚动条 ===== */
+.scroll-container { width: 100%; overflow-y: auto; max-height: calc(100vh - 120px); padding-right: 4px; }
+.scroll-container::-webkit-scrollbar { width: 3px; }
+.scroll-container::-webkit-scrollbar-thumb { background: rgba(44,44,44,0.15); border-radius: 2px; }
+
+/* ===== 柴门画面 ===== */
+.door-scene {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 20px;
+}
+.bamboo-gate {
+  font-size: 64px; opacity: 0.4; margin-bottom: 8px;
+}
+.door-text {
+  font-size: 13px; color: var(--light-ink); letter-spacing: 3px;
+  text-align: center; line-height: 2;
+}
+
+/* 响应式 */
+@media (max-width: 420px) {
+  #app { width: 100vw; }
+  .brew-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="mountain-bg">
+    <div class="mountain-layer l1"></div>
+    <div class="mountain-layer l2"></div>
+    <div class="mountain-layer l3"></div>
+  </div>
+
+  <!-- 标题页 -->
+  <div class="page" id="title-page">
+    <div class="title-seal">茶</div>
+    <div class="game-title">茶烟起处</div>
+    <div class="game-subtitle">栖 霞 山 · 茶 馆</div>
+    <button class="btn-stamp" onclick="startGame()">推门入山</button>
+  </div>
+
+  <!-- 茶室页 -->
+  <div class="page hidden" id="tea-scene">
+    <div class="scene-header">
+      <div class="shop-sign">栖 霞 茶 寮</div>
+      <div class="scene-info" id="scene-info">暮春 · 云肩坪 · 申时</div>
+    </div>
+    <div class="tea-room">
+      <div class="window-frame"></div>
+      <div class="table"></div>
+      <div class="teapot-silhouette"></div>
+      <div class="steam">☁</div>
+      <div class="customer-area hidden" id="customer-spot">
+        <div class="customer-silhouette"></div>
+        <div class="customer-label">???</div>
+      </div>
+    </div>
+    <div id="dialogue-container"></div>
+    <div id="brew-container"></div>
+  </div>
+
+  <!-- 碎片弹窗 -->
+  <div class="fragment-popup hidden" id="fragment-popup" onclick="closeFragmentPopup()">
+    <div class="fragment-card">
+      <div class="fragment-icon" id="frag-icon"></div>
+      <div class="fragment-name" id="frag-name"></div>
+      <div class="fragment-desc" id="frag-desc"></div>
+      <div class="fragment-type" id="frag-type"></div>
+      <div style="margin-top:12px;font-size:12px;color:var(--light-ink);">点击任意处继续</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ 游戏状态 ============
+const GameState = {
+  phase: 'title',        // title, entering, idle, dialogue, brewing, result, closing
+  season: '春',
+  weather: '晴',
+  timeOfDay: '申时',
+  customerPresent: null, // null | 'bailu'
+  dialogueStep: 0,
+  brewChoices: { ware: null, leaf: null, temp: 75, pourDone: false, steepStart: 0 },
+  brewStep: 0,  // 0=择壶 1=选叶 2=控温 3=注水 4=出汤
+  portrait: { gentle: 0, curious: 1, bold: 0, observant: 0 },
+  dialogueData: null,
+};
+
+// ============ UI 引用 ============
+const $ = id => document.getElementById(id);
+const titlePage = $('title-page');
+const teaScene = $('tea-scene');
+const sceneInfo = $('scene-info');
+const customerSpot = $('customer-spot');
+const dialogueContainer = $('dialogue-container');
+const brewContainer = $('brew-container');
+const fragmentPopup = $('fragment-popup');
+
+// ============ 页面切换 ============
+function showPage(show, hide) {
+  hide.classList.add('hidden');
+  setTimeout(() => {
+    show.classList.remove('hidden');
+  }, 50);
+}
+
+// ============ 开始游戏 ============
+function startGame() {
+  showPage(teaScene, titlePage);
+  setTimeout(() => enterScene(), 800);
+}
+
+function enterScene() {
+  GameState.phase = 'entering';
+  sceneInfo.textContent = `暮春 · 云肩坪 · ${GameState.timeOfDay}`;
+  
+  // NPC 入场
+  setTimeout(() => {
+    customerSpot.classList.remove('hidden');
+    customerSpot.classList.add('arrive-anim');
+    customerSpot.querySelector('.customer-label').textContent = '白露';
+    GameState.customerPresent = 'bailu';
+    
+    setTimeout(() => {
+      customerSpot.classList.remove('arrive-anim');
+      GameState.phase = 'dialogue';
+      startDialogue('bailu_first_visit');
+    }, 1600);
+  }, 1000);
+}
+
+// ============ 对话系统 ============
+function startDialogue(scriptId) {
+  // 白露首次来访完整剧本
+  GameState.dialogueData = [
+    { speaker: '白露', text: '（从竹帘后探出半个脑袋）掌柜的……这里，是茶馆吗？', mood: 'shy' },
+    { speaker: '白露', text: '我、我从山那边过来的。走了好远的路，闻到了茶香味。', mood: 'shy' },
+    { speaker: '', text: '一只狐妖少女站在门口，耳朵微微抖动，眼睛好奇地打量着茶寮里的陈设。', mood: 'narrate' },
+    { speaker: '白露', text: '其实……其实我是第一次来茶馆。以前只听竹青姐姐说过，说这里有好喝的茶。', mood: 'nervous' },
+    { speaker: '', text: '她揪着袖口，似乎有些紧张。你需要回应她——', mood: 'narrate', choices: [
+      { text: '「请进。刚泡好的桂花蜜茶，正好第一壶。」', tag: 'gentle', next: 'invite_warm' },
+      { text: '「第一次来？那我给你推荐一款特别适合新朋友的茶。」', tag: 'curious', next: 'invite_recommend' },
+      { text: '「狐妖？这片山里倒是少见。进来坐吧，茶管够。」', tag: 'bold', next: 'invite_bold' },
+    ]},
+  ];
+  GameState.dialogueStep = 0;
+  showDialogueStep(0);
+}
+
+function showDialogueStep(idx) {
+  if (idx >= GameState.dialogueData.length) {
+    // 对话结束，触发结局
+    endDialogue();
+    return;
+  }
+  const node = GameState.dialogueData[idx];
+  GameState.dialogueStep = idx;
+  
+  let html = '';
+  
+  // 说话人
+  if (node.speaker) {
+    html += `<div class="dialogue-speaker">${node.speaker}</div>`;
+  }
+  
+  // 文本
+  html += `<div class="dialogue-text">${node.text}</div>`;
+  
+  // 选项
+  if (node.choices) {
+    html += '<div class="dialogue-choices">';
+    node.choices.forEach((ch, i) => {
+      html += `<button class="choice-btn" onclick="pickChoice(${idx}, ${i})">${['一', '二', '三'][i]}、${ch.text}</button>`;
+    });
+    html += '</div>';
+  } else {
+    html += '<div class="tap-hint">轻触继续 ▼</div>';
+  }
+  
+  dialogueContainer.innerHTML = `<div class="dialogue-area">${html}</div>`;
+  dialogueContainer.onclick = function(e) {
+    if (!node.choices && !e.target.classList.contains('choice-btn')) {
+      GameState.dialogueStep++;
+      showDialogueStep(GameState.dialogueStep);
+    }
+  };
+}
+
+function pickChoice(nodeIdx, choiceIdx) {
+  const choice = GameState.dialogueData[nodeIdx].choices[choiceIdx];
+  
+  // 更新玩家画像
+  if (choice.tag) GameState.portrait[choice.tag] = (GameState.portrait[choice.tag] || 0) + 1;
+  
+  // 筑分支
+  if (choice.next === 'invite_warm') {
+    GameState.dialogueData = [
+      ...GameState.dialogueData.slice(0, nodeIdx + 1),
+      { speaker: '', text: '你倒了杯温热的桂花蜜茶，推到她面前。她小心翼翼地捧起茶杯。', mood: 'narrate' },
+      { speaker: '白露', text: '好香……是桂花的味道吗？我在山里也见过桂花树，但从来没摘过。', mood: 'warm' },
+      { speaker: '白露', text: '掌柜的，我、我其实想来问一件事。我总觉得……这座山在跟我说话。', mood: 'serious' },
+      { speaker: '', text: '她的耳朵垂了下来，声音变轻了。', mood: 'narrate' },
+      { speaker: '白露', text: '你能帮我……泡一杯能让我听清楚它在说什么的茶吗？', mood: 'pleading' },
+      { speaker: '', text: '这是她第一次请求你为她泡茶。她看起来很认真。', mood: 'narrate', brew: {
+        target: '桂花蜜茶', ware: '瓷壶', temp: 85, mood: '迷茫',
+        perfectMsg: '茶汤金黄透亮，桂花香气悠然飘散。白露端起杯子，安静地喝了一口。',
+        goodMsg: '茶还不错。白露点点头，耳朵轻轻晃了晃。',
+        okMsg: '白露皱了皱眉，但还是礼貌地喝完了。',
+        fragment: { icon: '🍃', name: '山的第一句', desc: '白露说，栖霞山在跟她说话。但山的语言，需要一杯对的茶才能听清。', type: '叙事碎片 · 白露线' }
+      }},
+    ];
+  } else if (choice.next === 'invite_recommend') {
+    GameState.dialogueData = [
+      ...GameState.dialogueData.slice(0, nodeIdx + 1),
+      { speaker: '', text: '你从茶架上取下一罐青翠的茶叶，打开盖子让她闻。', mood: 'narrate' },
+      { speaker: '白露', text: '（凑近闻了闻）嗯……有青草的味道，还有一点点……像是露水？', mood: 'curious' },
+      { speaker: '白露', text: '掌柜的好厉害，知道这么多茶。我其实——我其实是偷偷跑下山来的。云鹤爷爷要是知道了肯定要念叨。', mood: 'conspiratorial' },
+      { speaker: '', text: '她压低声音，像在分享一个秘密。', mood: 'narrate' },
+      { speaker: '白露', text: '我在找一个东西。我不知道它是什么，但我能感觉到……它就在这座山的某个地方。', mood: 'serious' },
+      { speaker: '白露', text: '你能帮我泡一杯茶吗？也许喝了茶我就知道该往哪找了。', mood: 'hopeful' },
+      { speaker: '', text: '她的眼睛亮了起来，满怀期待地望着你。', mood: 'narrate', brew: {
+        target: '桂花蜜茶', ware: '瓷壶', temp: 85, mood: '迷茫',
+        perfectMsg: '茶香四溢的那一刻，白露的耳朵突然竖了起来。她似乎"听"到了什么。',
+        goodMsg: '茶不错。白露笑眯眯地又喝了一口。',
+        okMsg: '白露歪着头想了想，说"下次再来试试"。',
+        fragment: { icon: '🦊', name: '偷跑下山的理由', desc: '白露是瞒着云鹤老偷偷跑来的。她在找一样自己也说不清的东西。', type: '叙事碎片 · 白露线' }
+      }},
+    ];
+  } else if (choice.next === 'invite_bold') {
+    GameState.dialogueData = [
+      ...GameState.dialogueData.slice(0, nodeIdx + 1),
+      { speaker: '白露', text: '（眼睛一亮）真的吗？！太好了！我还怕你会赶我走呢——毕竟我可是狐妖诶。', mood: 'excited' },
+      { speaker: '白露', text: '不过掌柜的，你倒是挺特别的。一般人看到我耳朵早就吓跑了。', mood: 'teasing' },
+      { speaker: '', text: '她在你对面坐下，托着腮，笑眯眯地看着你。', mood: 'narrate' },
+      { speaker: '白露', text: '那——既然你这么厉害，帮我泡一杯茶吧。一杯能让我明白自己为什么要来这里的茶。', mood: 'challenge' },
+      { speaker: '', text: '她脸上笑意不减，但眼底有一闪而过的认真。', mood: 'narrate', brew: {
+        target: '桂花蜜茶', ware: '瓷壶', temp: 85, mood: '迷茫',
+        perfectMsg: '完美的茶。白露放下杯子，很久没有说话。然后她笑了——和之前的笑都不一样。',
+        goodMsg: '白露满意地咂咂嘴，说"还不错！"',
+        okMsg: '白露做了个鬼脸——"下次不许烫我舌头！"',
+        fragment: { icon: '🌙', name: '特别的掌柜', desc: '白露觉得你是个不怕妖怪的怪人。她决定以后常来。', type: '叙事碎片 · 白露线' }
+      }},
+    ];
+  }
+  
+  // 插入冲泡指令
+  if (GameState.dialogueData[GameState.dialogueData.length - 1].brew) {
+    GameState.dialogueData[GameState.dialogueData.length - 2].brewTrigger = true;
+  }
+  
+  GameState.dialogueStep = nodeIdx + 1;
+  showDialogueStep(GameState.dialogueStep);
+}
+
+function endDialogue() {
+  GameState.phase = 'done';
+  dialogueContainer.innerHTML = `
+    <div class="dialogue-area" style="text-align:center;">
+      <div class="dialogue-text" style="font-size:14px;color:var(--light-ink);">
+        白露起身，向你鞠了一躬。<br>「掌柜的，我还会再来的。」<br><br>
+        竹帘轻响，她的身影消失在暮色里。<br>
+        茶烟还在。茶还温。
+      </div>
+      <button class="btn-stamp" style="margin-top:20px;" onclick="startGame()">再来一壶</button>
+    </div>
+  `;
+}
+
+// ============ 检测 brew 触发 ============
+let brewCheckInterval = null;
+function checkBrew() {
+  const node = GameState.dialogueData[GameState.dialogueStep];
+  if (node && node.brewTrigger) {
+    node.brewTrigger = false;
+    GameState.phase = 'brewing';
+    startBrewing(node.brew);
+  }
+}
+brewCheckInterval = setInterval(checkBrew, 500);
+
+// ============ 泡茶系统 ============
+function startBrewing(brewSpec) {
+  GameState.brewChoices = { ware: null, leaf: null, temp: brewSpec.temp, pourDone: false, steepStart: 0, spec: brewSpec };
+  GameState.brewStep = 0;
+  dialogueContainer.innerHTML = '';
+  renderBrewStep(0);
+}
+
+function renderBrewStep(step) {
+  GameState.brewStep = step;
+  const steps = ['择壶', '选叶', '控温', '注水', '出汤'];
+  let html = `<div class="brew-panel"><div class="brew-title">为 白露 泡茶</div><div class="brew-step-indicator">第 ${step+1} 步 · ${steps[step]}</div><div class="brew-content">`;
+  
+  if (step === 0) {
+    // 择壶
+    const wares = [
+      { id: 'ziSha', name: '紫砂壶', desc: '温润醇厚，不夺茶香', icon: '🏺' },
+      { id: 'ciHu', name: '白瓷壶', desc: '清透如玉，适合花香茶', icon: '⚱️' },
+      { id: 'tieHu', name: '铁壶', desc: '深沉稳重，适合老茶', icon: '🫖' },
+      { id: 'boLi', name: '玻璃壶', desc: '观色赏汤，一览无余', icon: '🍶' },
+    ];
+    html += '<div class="brew-grid">';
+    wares.forEach(w => {
+      html += `<button class="brew-item" onclick="selectWare('${w.id}', this)" data-id="${w.id}">${w.icon}<br>${w.name}<br><span style="font-size:10px;color:var(--light-ink)">${w.desc}</span></button>`;
+    });
+    html += '</div>';
+  } else if (step === 1) {
+    // 选叶
+    const leaves = [
+      { id: 'guiHuaMi', name: '桂花蜜茶', desc: '秋采桂花，蜜渍三月', hint: '甜润清雅' },
+      { id: 'longJing', name: '明前龙井', desc: '春采嫩芽，豆香清透', hint: '清冽如泉' },
+      { id: 'puEr', name: '陈年普洱', desc: '十年陈化，温润醇厚', hint: '深沉如墨' },
+      { id: 'moLi', name: '茉莉银针', desc: '七窨茉莉，花香四溢', hint: '馥郁芬芳' },
+    ];
+    html += '<div class="brew-grid">';
+    leaves.forEach(l => {
+      html += `<button class="brew-item" onclick="selectLeaf('${l.id}', this)" data-id="${l.id}">🍃<br>${l.name}<br><span style="font-size:10px;color:var(--light-ink)">${l.desc}</span></button>`;
+    });
+    html += '</div>';
+  } else if (step === 2) {
+    // 控温
+    const t = GameState.brewChoices.temp;
+    let tempClass = t < 60 ? 'cold' : (t < 90 ? 'warm' : 'hot');
+    html += `
+      <div class="temp-slider-wrap">
+        <div class="temp-label">调节水温</div>
+        <div class="temp-display ${tempClass}" id="temp-display">${t}°C</div>
+        <input type="range" min="40" max="100" value="${t}" oninput="updateTemp(this.value)" style="width:85%">
+        <div style="display:flex;justify-content:space-between;width:85%;margin-top:4px;font-size:10px;color:var(--light-ink)">
+          <span>凉白</span><span>温水</span><span>蟹眼</span><span>鱼眼</span><span>腾沸</span>
+        </div>
+        <button class="brew-action-btn" style="margin-top:16px;" onclick="confirmTemp()">确 定 <span style="font-size:10px;">${t}°C</span></button>
+      </div>`;
+  } else if (step === 3) {
+    // 注水
+    html += `
+      <div class="brew-action-area">
+        <div class="brew-animation">🫗</div>
+        <div style="font-size:14px;color:var(--ink);letter-spacing:2px;">悬壶高冲 · 水线绕壶一周</div>
+        <div style="font-size:12px;color:var(--light-ink);margin-top:8px;">点击壶身开始注水</div>
+        <button class="brew-action-btn" style="margin-top:16px;" onclick="pourWater()">开始注水</button>
+      </div>`;
+  } else if (step === 4) {
+    // 出汤
+    html += `
+      <div class="brew-action-area">
+        <div class="brew-animation">🍵</div>
+        <div style="font-size:14px;color:var(--ink);letter-spacing:2px;">等待茶汤浸出……</div>
+        <div class="brew-timer" id="steep-timer">0:00</div>
+        <button class="brew-action-btn" id="steep-btn" onclick="startSteep()">开始浸泡</button>
+        <button class="brew-action-btn" id="pour-btn" style="display:none;margin-top:8px;" onclick="pourOut()">出 汤</button>
+      </div>`;
+  }
+  
+  html += '</div></div>';
+  brewContainer.innerHTML = html;
+}
+
+function selectWare(id, btn) {
+  document.querySelectorAll('.brew-item[data-id]').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected', 'picked');
+  GameState.brewChoices.ware = id;
+  setTimeout(() => { GameState.brewStep++; renderBrewStep(GameState.brewStep); }, 400);
+}
+
+function selectLeaf(id, btn) {
+  document.querySelectorAll('.brew-item[data-id]').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected', 'picked');
+  GameState.brewChoices.leaf = id;
+  setTimeout(() => { GameState.brewStep++; renderBrewStep(GameState.brewStep); }, 400);
+}
+
+function updateTemp(v) {
+  GameState.brewChoices.temp = parseInt(v);
+  const d = document.getElementById('temp-display');
+  if (d) {
+    d.textContent = v + '°C';
+    d.className = 'temp-display ' + (v < 60 ? 'cold' : (v < 90 ? 'warm' : 'hot'));
+  }
+}
+
+function confirmTemp() {
+  GameState.brewStep++;
+  renderBrewStep(GameState.brewStep);
+}
+
+function pourWater() {
+  GameState.brewChoices.pourDone = true;
+  GameState.brewStep++;
+  renderBrewStep(GameState.brewStep);
+}
+
+let steepInterval = null;
+function startSteep() {
+  GameState.brewChoices.steepStart = Date.now();
+  document.getElementById('steep-btn').style.display = 'none';
+  document.getElementById('pour-btn').style.display = 'inline-block';
+  steepInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - GameState.brewChoices.steepStart) / 1000);
+    const m = Math.floor(elapsed / 60);
+    const s = elapsed % 60;
+    const t = document.getElementById('steep-timer');
+    if (t) t.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+    if (elapsed >= 30) t.style.color = 'var(--cinnabar)';
+  }, 200);
+}
+
+function pourOut() {
+  clearInterval(steepInterval);
+  const steepTime = (Date.now() - GameState.brewChoices.steepStart) / 1000;
+  evaluateBrew(steepTime);
+}
+
+function evaluateBrew(steepTime) {
+  const c = GameState.brewChoices;
+  const s = c.spec;
+  
+  // 评分
+  let score = 0;
+  if (c.leaf === 'guiHuaMi') score += 30;  // 正确茶叶
+  else if (c.leaf === 'moLi') score += 15;  // 相近
+  else score += 5;
+  
+  if (c.ware === 'ciHu') score += 25;  // 白瓷壶最佳配花香茶
+  else if (c.ware === 'ziSha') score += 15;
+  else score += 5;
+  
+  const tempDiff = Math.abs(c.temp - s.temp);
+  if (tempDiff <= 5) score += 20;
+  else if (tempDiff <= 15) score += 10;
+  else score += 3;
+  
+  if (c.pourDone) score += 15;  // 完成注水
+  if (steepTime >= 8 && steepTime <= 25) score += 10;  // 浸泡适中
+  else if (steepTime > 0 && steepTime < 8) score += 5;
+  else if (steepTime > 25 && steepTime <= 40) score += 3;
+  
+  // 判定
+  let grade, msg;
+  if (score >= 85) { grade = 'perfect'; msg = s.perfectMsg; }
+  else if (score >= 55) { grade = 'good'; msg = s.goodMsg; }
+  else { grade = 'ok'; msg = s.okMsg; }
+  
+  // 显示结果
+  const gradeNames = { perfect: '妙手', good: '尚可', ok: '初试' };
+  const gradeChars = { perfect: '✦✦✦', good: '✦✦☆', ok: '✦☆☆' };
+  
+  brewContainer.innerHTML = `
+    <div class="result-panel">
+      <div class="result-grade ${grade}">${gradeChars[grade]}</div>
+      <div style="font-size:13px;color:var(--light-ink);letter-spacing:2px;margin-bottom:8px;">${gradeNames[grade]}</div>
+      <div class="result-comment">${msg}</div>
+      <button class="brew-action-btn" onclick="showFragment('${grade}')">继续</button>
+    </div>`;
+  
+  GameState.lastBrew = { grade, spec: s };
+}
+
+function showFragment(grade) {
+  const frag = GameState.lastBrew.spec.fragment;
+  if (!frag) return proceedAfterBrew();
+  
+  $('frag-icon').textContent = frag.icon;
+  $('frag-name').textContent = frag.name;
+  $('frag-desc').textContent = frag.desc;
+  $('frag-type').textContent = frag.type;
+  fragmentPopup.classList.remove('hidden');
+}
+
+function closeFragmentPopup() {
+  fragmentPopup.classList.add('hidden');
+  proceedAfterBrew();
+}
+
+function proceedAfterBrew() {
+  brewContainer.innerHTML = '';
+  const brew = GameState.lastBrew;
+  
+  // 继续对话 - 白露的回应
+  let reply;
+  if (brew.grade === 'perfect') {
+    reply = { speaker: '白露', text: '（放下杯子，沉默了很久）……我听见了。真的。谢谢你，掌柜的。', mood: 'moved' };
+  } else if (brew.grade === 'good') {
+    reply = { speaker: '白露', text: '嗯——好喝！虽然还差一点点，但我已经很开心了。下次再来，你一定会泡得更好！', mood: 'happy' };
+  } else {
+    reply = { speaker: '白露', text: '唔……有点烫。不过没关系，第一次都这样吧？我也会慢慢学会的。', mood: 'teasing' };
+  }
+  
+  // 结尾
+  GameState.dialogueData = [
+    { speaker: '', text: '白露放下茶杯，站起身。竹帘外的天色已经暗下来了。', mood: 'narrate' },
+    reply,
+    { speaker: '白露', text: '我得回去了，不然山上的老家伙们要担心了。明天——明天我还能来吗？', mood: 'hopeful' },
+    { speaker: '', text: '她没有等回答，只是在竹帘边回头笑了一下，然后消失在山径的暮色中。', mood: 'narrate' },
+    { speaker: '', text: '茶烟还在。茶还温。你的茶馆，有了第一位常客。', mood: 'narrate', end: true },
+  ];
+  GameState.dialogueStep = 0;
+  showDialogueStep(0);
+}
+
+// ============ 初始化 ============
+document.addEventListener('DOMContentLoaded', () => {
+  // 触摸优化
+  document.addEventListener('touchmove', function(e) {}, { passive: true });
+});
+</script>
+</body>
+</html>

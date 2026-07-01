@@ -1,0 +1,58 @@
+# Unity
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+
+# Asset meta files should NOT be ignored
+!/[Aa]ssets/**/*.asset
+*.pidb
+*.pdb
+*.mdb
+*.apk
+*.aab
+*.unitypackage
+*.app
+
+# VS/MD
+.csproj
+.sln
+*.csproj
+*.unityproj
+*.booproj
+*.svd
+*.userprefs
+.idea/
+.vs/
+*.DotSettings.user
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE
+.vscode/
+*.swp
+*.swo
+*~
+
+# Merge conflict backups
+*.orig
+
+# FMOD
+*.fsb
+*.fspro
+/fmod_editor.log
+
+# Crashlytics / analytics temp
+Crashlytics/
+Firebase/
+
+# Asset Store tools cache
+AssetStoreTools*
