@@ -27,6 +27,14 @@ namespace TeaMist.Core
         public AudioClip dayStart;        // 清晨开门
         public AudioClip dayEnd;          // 晚间闭店
         public AudioClip pageTurn;        // 翻页声（茶谱图鉴）
+        public AudioClip brewSelect;      // 泡茶选择：择壶/选叶
+        public AudioClip brewTempConfirm; // 控温确认
+        public AudioClip brewWaterPour;   // 注水声
+        public AudioClip brewPourTea;     // 出汤声
+        public AudioClip brewStepAdvance; // 步骤推进
+        public AudioClip brewResultGreat; // 结果：完美
+        public AudioClip brewResultGood;  // 结果：不错
+        public AudioClip brewResultOk;    // 结果：还行
 
         [Header("━━━ 参数 ━━━")]
         [Range(0f, 1f)]
@@ -183,6 +191,52 @@ namespace TeaMist.Core
         {
             if (dayEnd != null)
                 _sfxSource.PlayOneShot(dayEnd, 0.5f * sfxVolume * masterVolume);
+        }
+
+        // ━━━ 泡茶音效 ━━━
+
+        /// <summary>择壶/选叶点击</summary>
+        public void PlayBrewSelect()
+        {
+            if (brewSelect != null)
+                _sfxSource.PlayOneShot(brewSelect, 0.4f * sfxVolume * masterVolume);
+        }
+
+        /// <summary>控温确认</summary>
+        public void PlayBrewTempConfirm()
+        {
+            if (brewTempConfirm != null)
+                _sfxSource.PlayOneShot(brewTempConfirm, 0.45f * sfxVolume * masterVolume);
+        }
+
+        /// <summary>注水</summary>
+        public void PlayBrewWaterPour()
+        {
+            if (brewWaterPour != null)
+                _sfxSource.PlayOneShot(brewWaterPour, 0.55f * sfxVolume * masterVolume);
+        }
+
+        /// <summary>出汤</summary>
+        public void PlayBrewPourTea()
+        {
+            if (brewPourTea != null)
+                _sfxSource.PlayOneShot(brewPourTea, 0.5f * sfxVolume * masterVolume);
+        }
+
+        /// <summary>步骤推进</summary>
+        public void PlayBrewStepAdvance()
+        {
+            if (brewStepAdvance != null)
+                _sfxSource.PlayOneShot(brewStepAdvance, 0.35f * sfxVolume * masterVolume);
+        }
+
+        /// <summary>泡茶结果反馈</summary>
+        public void PlayBrewResult(int score)
+        {
+            AudioClip clip = score >= 90 ? brewResultGreat :
+                             score >= 60 ? brewResultGood : brewResultOk;
+            if (clip != null)
+                _sfxSource.PlayOneShot(clip, 0.6f * sfxVolume * masterVolume);
         }
 
         // ━━━ 内部 ━━━

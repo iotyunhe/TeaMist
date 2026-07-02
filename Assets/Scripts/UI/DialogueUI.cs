@@ -90,8 +90,8 @@ namespace TeaMist.Dialogue
             var npcRt = npcDialogueGroup.GetComponent<RectTransform>();
             npcRt.anchorMin = npcRt.anchorMax = new Vector2(0.5f, 0.5f);
             npcRt.pivot = new Vector2(0.5f, 0.5f);
-            npcRt.anchoredPosition = new Vector2(0, 80);
-            npcRt.sizeDelta = new Vector2(1728, 650);
+            npcRt.anchoredPosition = new Vector2(0, 50);
+            npcRt.sizeDelta = new Vector2(1600, 420);
 
             if (speakerNameText == null)
             {
@@ -100,7 +100,7 @@ namespace TeaMist.Dialogue
                 // 位置由 FixSpeakerNameLayout() 动态计算，这里只设初始值
                 var snRt = speakerNameText.GetComponent<RectTransform>();
                 snRt.pivot = new Vector2(0, 1);
-                snRt.anchoredPosition = new Vector2(-584, 205);  // padLeft=280, padTop=120 近似
+                snRt.anchoredPosition = new Vector2(-650, 190);
                 snRt.sizeDelta = new Vector2(300, 38);
             }
             speakerNameText.alignment = TextAnchor.UpperLeft;
@@ -112,11 +112,13 @@ namespace TeaMist.Dialogue
                     new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
                 var dtRt = dialogueText.GetComponent<RectTransform>();
                 dtRt.pivot = new Vector2(0.5f, 0.5f);
-                dtRt.anchoredPosition = new Vector2(0, -35);
-                dtRt.sizeDelta = new Vector2(1628, 520);
+                dtRt.anchoredPosition = new Vector2(0, -50);
+                dtRt.sizeDelta = new Vector2(1500, 300);
             }
             dialogueText.alignment = TextAnchor.MiddleCenter;
-            dialogueText.lineSpacing = 8f;
+            dialogueText.lineSpacing = 1.5f;
+            dialogueText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            dialogueText.verticalOverflow = VerticalWrapMode.Overflow;
 
             // ── 选项组 ──
             optionsGroup = CreateChild("OptionsGroup", rt);
@@ -314,11 +316,11 @@ namespace TeaMist.Dialogue
             FixSpeakerNameLayout();
             FixDialogueTextLayout();
 
-            // NPC 对话：显示说话人名 + 居中文字
+            // NPC 对话：显示说话人名 + 文字左对齐，打字机从左到右
             speakerNameText.gameObject.SetActive(true);
             speakerNameText.text = speaker;
             speakerNameText.color = GetSpeakerColor(speaker);
-            dialogueText.alignment = TextAnchor.MiddleCenter;
+            dialogueText.alignment = TextAnchor.UpperLeft;
             dialogueText.fontStyle = FontStyle.Normal;
             dialogueText.color = InkBlack;
 
@@ -468,8 +470,8 @@ namespace TeaMist.Dialogue
             // 动态读取 NPCGroup 实际 rect 尺寸，计算卷轴内左上角位置
             float npcW = npcRt.rect.width;
             float npcH = npcRt.rect.height;
-            const float padLeft = 280f;   // 避开左侧轴头，进入宣纸区
-            const float padTop  = 120f;   // 避开顶部卷边，进入宣纸区
+            const float padLeft = 150f;   // 避开左侧轴头，进入宣纸区
+            const float padTop  = 20f;    // 靠近顶部卷边，进入宣纸区
             const float nameW   = 300f;
             const float nameH   = 38f;
 
@@ -489,8 +491,8 @@ namespace TeaMist.Dialogue
             rt.anchorMin = new Vector2(0.5f, 0.5f);
             rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.anchoredPosition = new Vector2(0, -35);
-            rt.sizeDelta = new Vector2(1628, 520);
+            rt.anchoredPosition = new Vector2(0, -50);
+            rt.sizeDelta = new Vector2(1500, 300);
         }
 
         private void HideAllGroups()

@@ -36,6 +36,9 @@ namespace TeaMist.Dialogue
         private Queue<DialogueLine> lineQueue = new Queue<DialogueLine>();
         private List<DialogueOption> currentOptions = new List<DialogueOption>();
 
+        // 对话前旁白队列（DailyStoryPool 等系统注入的环境描写）
+        private Queue<string> _preDialogueNarrations = new Queue<string>();
+
         void Awake()
         {
             if (Instance != null && Instance != this)
@@ -55,6 +58,15 @@ namespace TeaMist.Dialogue
         // ━━━ 公共 API ━━━
 
         /// <summary>
+        /// 添加对话前旁白（在 StartDialogue 之前调用，旁白会在 NPC 对话前展示）
+        /// </summary>
+        public void AddPreDialogueNarration(string text)
+        {
+            if (!string.IsNullOrEmpty(text))
+                _preDialogueNarrations.Enqueue(text);
+        }
+
+        /// <summary>
         /// 启动一段对话。传入 Yarn 剧本文件名（不含后缀）。
         /// 例如: StartDialogue("bai_lu_first_visit")
         /// </summary>
@@ -72,6 +84,16 @@ namespace TeaMist.Dialogue
             currentOptions.Clear();
 
             OnDialogueStarted?.Invoke(scriptName);
+
+            // 插入对话前旁白（DailyStoryPool 环境描写等）
+            while (_preDialogueNarrations.Count > 0)
+            {
+                lineQueue.Enqueue(new DialogueLine
+                {
+                    type = DialogueLineType.Narrator,
+                    text = _preDialogueNarrations.Dequeue()
+                });
+            }
 
             // 加载并解析 Yarn 文件
             var lines = LoadAndParseYarnScript(scriptName);
@@ -651,7 +673,7 @@ namespace TeaMist.Dialogue
 
         /// <summary>
         /// 解析运行时变量（天气/季节/时间等，不持久化，从管理器读取）
-        /// 支持的键：weather, season, time, day
+        /// 支持的键：weather, season, time, day, mood
         /// </summary>
         public string ResolveRuntime(string key)
         {
@@ -665,6 +687,8 @@ namespace TeaMist.Dialogue
                     return Core.TimeManager.Instance?.CurrentTimeSlot.ToString() ?? "午后";
                 case "day":
                     return Core.TimeManager.Instance?.DayInSeason.ToString() ?? "1";
+                case "mood":
+                    return vars.TryGetValue("mood", out var m) ? m : "喜悦";
                 default:
                     // 尝试从 vars 获取
                     vars.TryGetValue(key, out var val);

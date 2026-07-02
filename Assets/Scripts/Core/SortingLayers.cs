@@ -28,6 +28,12 @@ namespace TeaMist.Core
             // Overlay 层内
             public const int Overlay_Weather = 0;
             public const int Overlay_Effect  = 10;
+
+            // Props 层内
+            public const int Props_Front = 20;   // 窗框等靠前道具
+
+            // Foreground 层内
+            public const int Foreground_Curtain = 10; // 竹帘
         }
     }
 }

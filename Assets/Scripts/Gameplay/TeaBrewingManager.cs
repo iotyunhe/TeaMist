@@ -27,8 +27,11 @@ namespace TeaMist.Gameplay
         // 玩家累计选择（最终用于匹配打分）
         private BrewingChoices playerChoices;
 
+        /// <summary>最近一次泡茶的逐维评分分解（供 UI 展示）</summary>
+        public ScoreBreakdown lastBreakdown { get; private set; }
+
         [Header("━━━ 可用茶具 ━━━")]
-        public TeawareData[] availableTeawares;
+        public TeawareSO[] availableTeawares;
 
         [Header("━━━ 可用茶叶 ━━━")]
         public List<TeaRecipeSO> availableTeaRecipes;
@@ -63,15 +66,15 @@ namespace TeaMist.Gameplay
             // ── 默认茶具（7种）──
             if (availableTeawares == null || availableTeawares.Length == 0)
             {
-                availableTeawares = new TeawareData[]
+                availableTeawares = new TeawareSO[]
                 {
-                    new TeawareData { displayName = "老紫砂", materialType = "紫砂", heatRetention = 1.8f, fragranceBoost = 0.9f, description = "一把用了多年的紫砂壶，壶身温润。最适合泡红茶和乌龙。" },
-                    new TeawareData { displayName = "青瓷壶", materialType = "瓷",   heatRetention = 1.0f, fragranceBoost = 1.2f, description = "薄胎青瓷，透光如玉。绿茶和花茶的最佳搭档。" },
-                    new TeawareData { displayName = "白瓷盖碗", materialType = "瓷",   heatRetention = 0.7f, fragranceBoost = 1.4f, description = "敞口盖碗，闻香方便。适合品鉴各类清茶。" },
-                    new TeawareData { displayName = "玻璃壶", materialType = "玻璃", heatRetention = 0.6f, fragranceBoost = 1.0f, description = "透明的壶身，可观茶汤变幻。绿茶花茶皆宜。" },
-                    new TeawareData { displayName = "粗陶壶", materialType = "粗陶", heatRetention = 1.6f, fragranceBoost = 0.6f, description = "山土烧制的陶壶，拙朴厚重。最适合煮黑茶和药茶。" },
-                    new TeawareData { displayName = "银壶",   materialType = "银壶", heatRetention = 1.5f, fragranceBoost = 1.5f, description = "老银匠打的壶，传了三代。白茶和灵茶的最佳容具。" },
-                    new TeawareData { displayName = "竹筒壶", materialType = "竹筒", heatRetention = 0.4f, fragranceBoost = 1.6f, description = "一截老竹掏成的壶，带着竹香。适合冷泡和药茶，可触发隐藏发现茶。" }
+                    CreateRuntimeTeaware("老紫砂", "紫砂", 1.8f, 0.9f, "一把用了多年的紫砂壶，壶身温润。最适合泡红茶和乌龙。"),
+                    CreateRuntimeTeaware("青瓷壶", "瓷",   1.0f, 1.2f, "薄胎青瓷，透光如玉。绿茶和花茶的最佳搭档。"),
+                    CreateRuntimeTeaware("白瓷盖碗", "瓷", 0.7f, 1.4f, "敞口盖碗，闻香方便。适合品鉴各类清茶。"),
+                    CreateRuntimeTeaware("玻璃壶", "玻璃", 0.6f, 1.0f, "透明的壶身，可观茶汤变幻。绿茶花茶皆宜。"),
+                    CreateRuntimeTeaware("粗陶壶", "粗陶", 1.6f, 0.6f, "山土烧制的陶壶，拙朴厚重。最适合煮黑茶和药茶。"),
+                    CreateRuntimeTeaware("银壶",   "银壶", 1.5f, 1.5f, "老银匠打的壶，传了三代。白茶和灵茶的最佳容具。"),
+                    CreateRuntimeTeaware("竹筒壶", "竹筒", 0.4f, 1.6f, "一截老竹掏成的壶，带着竹香。适合冷泡和药茶，可触发隐藏发现茶。")
                 };
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 Debug.Log("[TeaBrewing] 已注入默认茶具 (7种)");
@@ -166,6 +169,144 @@ namespace TeaMist.Gameplay
             return so;
         }
 
+        private TeawareSO CreateRuntimeTeaware(
+            string name, string material, float retention, float fragrance, string desc)
+        {
+            var so = ScriptableObject.CreateInstance<TeawareSO>();
+            so.displayName = name;
+            so.materialType = material;
+            so.heatRetention = retention;
+            so.fragranceBoost = fragrance;
+            so.description = desc;
+            return so;
+        }
+
+#if UNITY_EDITOR
+        /// <summary>
+        /// 在 Editor 中一键生成默认茶具 .asset 文件。
+        /// 右键 TeaBrewingManager 组件 → "创建默认茶具资产"
+        /// </summary>
+        [ContextMenu("创建默认茶具资产")]
+        private void CreateDefaultTeawareAssets()
+        {
+            string dir = "Assets/ScriptableObjects/Teawares";
+            if (!System.IO.Directory.Exists(dir))
+                System.IO.Directory.CreateDirectory(dir);
+
+            var defaults = new (string name, string mat, float hr, float fb, string desc)[]
+            {
+                ("老紫砂", "紫砂", 1.8f, 0.9f, "一把用了多年的紫砂壶，壶身温润。最适合泡红茶和乌龙。"),
+                ("青瓷壶", "瓷",   1.0f, 1.2f, "薄胎青瓷，透光如玉。绿茶和花茶的最佳搭档。"),
+                ("白瓷盖碗","瓷",  0.7f, 1.4f, "敞口盖碗，闻香方便。适合品鉴各类清茶。"),
+                ("玻璃壶", "玻璃", 0.6f, 1.0f, "透明的壶身，可观茶汤变幻。绿茶花茶皆宜。"),
+                ("粗陶壶", "粗陶", 1.6f, 0.6f, "山土烧制的陶壶，拙朴厚重。最适合煮黑茶和药茶。"),
+                ("银壶",   "银壶", 1.5f, 1.5f, "老银匠打的壶，传了三代。白茶和灵茶的最佳容具。"),
+                ("竹筒壶", "竹筒", 0.4f, 1.6f, "一截老竹掏成的壶，带着竹香。适合冷泡和药茶，可触发隐藏发现茶。")
+            };
+
+            foreach (var d in defaults)
+            {
+                string path = $"{dir}/Teaware_{d.name}.asset";
+                var existing = UnityEditor.AssetDatabase.LoadAssetAtPath<TeawareSO>(path);
+                if (existing != null)
+                {
+                    existing.displayName = d.name;
+                    existing.materialType = d.mat;
+                    existing.heatRetention = d.hr;
+                    existing.fragranceBoost = d.fb;
+                    existing.description = d.desc;
+                    UnityEditor.EditorUtility.SetDirty(existing);
+                    Debug.Log($"[TeaBrewing] 已更新茶具资产: {path}");
+                }
+                else
+                {
+                    var so = CreateRuntimeTeaware(d.name, d.mat, d.hr, d.fb, d.desc);
+                    UnityEditor.AssetDatabase.CreateAsset(so, path);
+                    Debug.Log($"[TeaBrewing] 已创建茶具资产: {path}");
+                }
+            }
+
+            UnityEditor.AssetDatabase.SaveAssets();
+            UnityEditor.AssetDatabase.Refresh();
+            Debug.Log("[TeaBrewing] 7 种默认茶具资产创建/更新完成");
+        }
+
+        /// <summary>
+        /// 在 Editor 中一键生成默认茶谱 .asset 文件。
+        /// 右键 TeaBrewingManager 组件 → "创建默认茶谱资产"
+        /// </summary>
+        [ContextMenu("创建默认茶谱资产")]
+        private void CreateDefaultRecipeAssets()
+        {
+            string dir = "Assets/ScriptableObjects/TeaRecipes";
+            if (!System.IO.Directory.Exists(dir))
+                System.IO.Directory.CreateDirectory(dir);
+
+            var defaults = new (string id, string name, string desc, TeaFamily family, FlavorType flavor,
+                TeaSeason season, float temp, float steep, TeawareType teaware, float retention,
+                PourStyle pour, float w, float c, float b, float sw, float a, float sm)[]
+            {
+                ("guihuamicha", "桂花蜜茶", "桂花与蜂蜜调和的花茶，甜香扑鼻。白露最喜欢的茶。",
+                    TeaFamily.花茶, FlavorType.甜润, TeaSeason.秋, 85f, 30f, TeawareType.瓷壶, 0.8f, PourStyle.MidSpiral,
+                    8f, 5f, 5f, 9f, 5f, 7f),
+                ("qingxincha", "清心茶", "最简单的清茶，只取山泉和嫩叶。越简单越见功夫。",
+                    TeaFamily.绿茶, FlavorType.清香, TeaSeason.春, 75f, 20f, TeawareType.玻璃壶, 0.5f, PourStyle.LowFast,
+                    5f, 7f, 3f, 5f, 5f, 8f),
+                ("bohecha", "薄荷茶", "新鲜薄荷叶冲泡的药茶，清凉入喉。当归用来治伤的茶。",
+                    TeaFamily.药茶, FlavorType.药香, TeaSeason.夏, 80f, 15f, TeawareType.盖碗, 0.6f, PourStyle.EdgePour,
+                    5f, 9f, 4f, 5f, 5f, 6f),
+                ("zhu_qing", "竹叶青", "采自栖霞山竹间的嫩芽，色泽青翠如竹。竹青自己培育的茶。",
+                    TeaFamily.绿茶, FlavorType.清香, TeaSeason.春, 78f, 25f, TeawareType.玻璃壶, 0.5f, PourStyle.MidSpiral,
+                    5f, 6f, 5f, 4f, 3f, 8f),
+                ("laohongpao", "老红袍", "岩骨花香的乌龙老茶，焙火深厚。云鹤老等了三百年的味道。",
+                    TeaFamily.乌龙茶, FlavorType.醇厚, TeaSeason.秋, 95f, 45f, TeawareType.紫砂壶, 1.5f, PourStyle.HighSlow,
+                    7f, 5f, 5f, 5f, 4f, 9f),
+                ("shanquanbaicha", "山泉白茶", "日晒而成的白茶，只取最嫩的芽头。小山说石头也需要喝水。",
+                    TeaFamily.白茶, FlavorType.清爽, TeaSeason.冬, 70f, 60f, TeawareType.银壶, 1.2f, PourStyle.LowFast,
+                    5f, 5f, 5f, 6f, 5f, 9f)
+            };
+
+            foreach (var d in defaults)
+            {
+                string path = $"{dir}/Tea_{d.id}.asset";
+                var existing = UnityEditor.AssetDatabase.LoadAssetAtPath<TeaRecipeSO>(path);
+                if (existing != null)
+                {
+                    existing.teaName = d.name;
+                    existing.description = d.desc;
+                    existing.family = d.family;
+                    existing.flavorProfile = d.flavor;
+                    existing.season = d.season;
+                    existing.idealTemperature = d.temp;
+                    existing.idealSteepTime = d.steep;
+                    existing.idealTeaware = d.teaware;
+                    existing.idealHeatRetention = d.retention;
+                    existing.idealPourStyle = d.pour;
+                    existing.warmth = d.w;
+                    existing.coolness = d.c;
+                    existing.bitterness = d.b;
+                    existing.sweetness = d.sw;
+                    existing.astringency = d.a;
+                    existing.smoothness = d.sm;
+                    existing.rarity = TeaRarity.常见;
+                    UnityEditor.EditorUtility.SetDirty(existing);
+                    Debug.Log($"[TeaBrewing] 已更新茶谱资产: {path}");
+                }
+                else
+                {
+                    var so = CreateRuntimeRecipe(d.id, d.name, d.desc, d.family, d.flavor, d.season,
+                        d.temp, d.steep, d.teaware, d.retention, d.pour, d.w, d.c, d.b, d.sw, d.a, d.sm);
+                    UnityEditor.AssetDatabase.CreateAsset(so, path);
+                    Debug.Log($"[TeaBrewing] 已创建茶谱资产: {path}");
+                }
+            }
+
+            UnityEditor.AssetDatabase.SaveAssets();
+            UnityEditor.AssetDatabase.Refresh();
+            Debug.Log("[TeaBrewing] 6 种默认茶谱资产创建/更新完成");
+        }
+#endif
+
         // ━━━ 公共 API ━━━
 
         // 缓存茶壶引用，避免重复 GameObject.Find
@@ -194,7 +335,11 @@ namespace TeaMist.Gameplay
             if (_cachedTeapot != null)
             {
                 var steam = _cachedTeapot.GetComponent<TeaSteamEffect>();
-                if (steam != null) steam.Play();
+                if (steam != null)
+                {
+                    steam.SetTeaName(request); // 蒸汽带茶色
+                    steam.Play();
+                }
             }
 
             // 如果泡茶 UI 不可用，使用自动泡茶模式
@@ -297,8 +442,10 @@ namespace TeaMist.Gameplay
 
             // 计算匹配分数
             int qualityScore = TeaMatchAlgorithm.CalculateMatchScore(
-                playerChoices, targetRecipe, availableTeawares, availableTeaRecipes
+                playerChoices, targetRecipe, availableTeawares, availableTeaRecipes,
+                out ScoreBreakdown breakdown
             );
+            lastBreakdown = breakdown;
 
             OnBrewingComplete?.Invoke(qualityScore);
 
@@ -360,16 +507,6 @@ namespace TeaMist.Gameplay
         LowFast,    // 低冲快注 — 保持清甜
         MidSpiral,  // 中位回旋 — 均匀萃取
         EdgePour    // 沿壁注水 — 温和不惊叶
-    }
-
-    [System.Serializable]
-    public struct TeawareData
-    {
-        public string displayName;
-        public string materialType; // 紫砂/瓷/玻璃/粗陶/铁壶/竹筒/银壶
-        [Range(0f, 2f)] public float heatRetention;   // 保温性
-        [Range(0f, 2f)] public float fragranceBoost;  // 提香
-        [TextArea(2, 4)] public string description;
     }
 
     /// <summary>

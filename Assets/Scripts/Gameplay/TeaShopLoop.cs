@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using TeaMist.Core;
 using TeaMist.NPC;
 using TeaMist.Data;
+using TeaMist.Story;
 
 namespace TeaMist.Gameplay
 {
@@ -30,6 +31,9 @@ namespace TeaMist.Gameplay
 
         /// <summary>今日 NPC 来访计划（由 NPCScheduleManager 生成）</summary>
         private List<NPCVisitPlan> _todayVisitPlans = new List<NPCVisitPlan>();
+
+        /// <summary>当前来访 NPC 的心情（由日程计划传入，供 Yarn 条件使用）</summary>
+        private MoodTag _currentMood = MoodTag.喜悦;
 
         [Header("━━━ 事件 ━━━")]
         public UnityEvent<string> OnCustomerEntered;    // 客人 ID
@@ -131,6 +135,12 @@ namespace TeaMist.Gameplay
             foreach (var p in _todayVisitPlans)
                 Debug.Log($"  {p.npcId} @ {p.arrivalHour}:00 (心情:{p.mood})");
 #endif
+
+            // 刷新今日八卦（GossipPool 每日更新活跃消息）
+            float gameDay = (float)(Core.TimeManager.Instance?.TotalDaysPlayed ?? 1);
+            var npcAffections = Dialogue.DialogueManager.Instance?.variableStorage?.affection
+                ?? new Dictionary<string, int>();
+            GossipPool.Instance?.RefreshDaily(season, weather, gameDay, npcAffections);
         }
 
         /// <summary>
@@ -148,6 +158,7 @@ namespace TeaMist.Gameplay
                 var plan = _todayVisitPlans[i];
                 if (plan.arrivalHour != hour) continue;
 
+                _currentMood = plan.mood;
                 StartCustomerVisit(plan.npcId);
                 _todayVisitPlans.RemoveAt(i);
                 return;
@@ -222,15 +233,58 @@ namespace TeaMist.Gameplay
 
             currentState = ShopState.InDialogue;
 
+            // 将当前心情写入对话变量存储（供 Yarn if:mood=xxx 条件使用）
+            var storage = Dialogue.DialogueManager.Instance?.variableStorage;
+            if (storage != null)
+                storage.SetVariable("mood", _currentMood.ToString());
+
+            // 尝试获取日常故事作为对话前环境旁白（DailyStoryPool）
+            var dm = Dialogue.DialogueManager.Instance;
+            if (dm != null && DailyStoryPool.Instance != null)
+            {
+                var curSeason = SeasonManager.Instance != null ? SeasonManager.Instance.CurrentSeason : Season.Spring;
+                var curWeather = ConvertWeather(WeatherManager.Instance?.CurrentWeather ?? WeatherType.晴);
+                float gameDay = (float)(Core.TimeManager.Instance?.TotalDaysPlayed ?? 1);
+                var presentNPCs = new List<string> { currentNPCId };
+                var fragments = new HashSet<string>(
+                    Core.NarrativeStateManager.Instance?.GetCollectedFragments() ?? new List<string>());
+
+                var story = DailyStoryPool.Instance.PickRandomStory(
+                    curSeason, curWeather, gameDay, presentNPCs, fragments);
+
+                if (story != null)
+                {
+                    dm.AddPreDialogueNarration(story.narrativeText);
+                    DailyStoryPool.Instance.RegisterStoryTriggered(story, gameDay);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    Debug.Log($"[TeaShopLoop] 日常故事触发: {story.title} (类型:{story.type})");
+#endif
+                }
+            }
+
             // 将 NPC ID 映射到 Yarn 剧本文件名
             string scriptName = GetNPCScriptName(currentNPCId);
-            Dialogue.DialogueManager.Instance?.StartDialogue(scriptName);
+            dm?.StartDialogue(scriptName);
         }
 
         /// <summary>NPC ID → Yarn 剧本文件名映射（根据来访次数选择不同剧本）</summary>
         private static string GetNPCScriptName(string npcId)
         {
             int visitCount = Core.NarrativeStateManager.Instance?.GetVisitCount(npcId) ?? 1;
+
+            // 第三次及以后 → 日常闲聊剧本（季节/天气/好感度分支）
+            if (visitCount >= 3)
+            {
+                string dailyName = npcId switch
+                {
+                    "bailu"    => "bai_lu_daily_chat",
+                    "yunhelao" => "yunhelao_daily_chat",
+                    _          => $"{npcId}_daily_chat"
+                };
+
+                if (Resources.Load<TextAsset>($"Yarn/Characters/{dailyName}") != null)
+                    return dailyName;
+            }
 
             // 第二次来访 → 尝试加载 second_visit 剧本
             if (visitCount >= 2)
@@ -284,7 +338,26 @@ namespace TeaMist.Gameplay
 
         private void OnDialogueFinished(string scriptName)
         {
+            // 对话结束后，有概率展示一条八卦闲聊（GossipPool）
+            TryShowPostDialogueGossip();
+
             EndCustomerVisit();
+        }
+
+        /// <summary>对话结束后有概率展示八卦闲聊（30%概率，从今日活跃八卦中随机选一条）</summary>
+        private void TryShowPostDialogueGossip()
+        {
+            if (GossipPool.Instance == null) return;
+            var gossips = GossipPool.Instance.GetActiveGossips();
+            if (gossips == null || gossips.Count == 0) return;
+            if (Random.value > 0.3f) return; // 30% 概率展示
+
+            var gossip = gossips[Random.Range(0, gossips.Count)];
+            string note = GossipPool.Instance.GetGossipAsNote(gossip);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log($"[TeaShopLoop] 八卦闲聊: {gossip.senderName} → {gossip.subjectName}\n{gossip.content}");
+#endif
+            // TODO: 未来在 UI 上以"竹青小笺"形式展示，当前仅日志记录
         }
 
         private void OnFragmentDrop(string fragmentId, string npcId)

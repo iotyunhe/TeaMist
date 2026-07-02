@@ -281,6 +281,33 @@ namespace TeaMist.Core
                 go.AddComponent<TeaSteamEffect>();
             }
 
+            // ── C1: 窗外纸窗景色 ──
+            var windowGo = new GameObject("WindowView");
+            windowGo.transform.SetParent(root.transform, false);
+            windowGo.transform.localPosition = new Vector3(0, 2.5f, 4f); // 位于远山和茶馆之间
+            windowGo.AddComponent<WindowView>();
+            Debug.Log("[SceneAutoSetup] 创建: WindowView（窗外纸窗景色）");
+
+            // ── C3: 桌面小物件 ──
+            var decoGo = new GameObject("TeaHouseDecoration");
+            decoGo.transform.SetParent(root.transform, false);
+            decoGo.transform.position = new Vector3(0, 0, 0.3f);
+            decoGo.AddComponent<TeaHouseDecoration>();
+            Debug.Log("[SceneAutoSetup] 创建: TeaHouseDecoration（香炉/花瓶/茶宠）");
+
+            // ── C2: 竹帘卷帘（前景层）──
+            var curtainGo = new GameObject("CurtainController");
+            curtainGo.transform.SetParent(root.transform, false);
+            curtainGo.transform.position = new Vector3(0, 0, -2f); // 前景，离相机最近
+            var curtain = curtainGo.AddComponent<CurtainController>();
+            Debug.Log("[SceneAutoSetup] 创建: CurtainController（竹帘）");
+
+            // 将帘子引用传给茶馆场景控制器
+            if (bootstrap.teaHouseScene != null)
+            {
+                bootstrap.teaHouseScene.curtainController = curtain;
+            }
+
             // ── Layer CHARACTERS: 8 位 NPC（初始隐藏）──
             CreateNpcSprite("白露", "Char_BaiLu", root, SortingLayers.OrderInLayer.Char_Default,
                 new Vector3(-4f, -2.5f, -0.3f), 0.85f);

@@ -60,6 +60,16 @@ namespace TeaMist.Gameplay
         [Header("━━━ 茶汤显色 ━━━")]
         public Image teaSoupImage;       // 出汤后显示的茶汤色块
 
+        [Header("━━━ 评分分解 ━━━")]
+        private GameObject _breakdownPanel;
+        private Text[] _breakdownLabels;
+        private Image[] _breakdownBars;
+        private const int BREAKDOWN_COUNT = 6;
+        private static readonly string[] BREAKDOWN_NAMES =
+            { "茶叶", "茶具", "水温", "注水", "出汤", "发现" };
+        private static readonly float[] BREAKDOWN_MAX =
+            { 30f, 30f, 20f, 15f, 10f, 10f };
+
         private bool _uiBuilt;
         private TeaMist.Rendering.TeaSteamEffect _steamEffect;  // 缓存蒸汽组件
         private float _normalEmissionRate = 4.5f;  // 正常蒸汽速率
@@ -242,6 +252,9 @@ namespace TeaMist.Gameplay
                 "确认温度", new Vector2(0.3f, 0), new Vector2(0.7f, 0.12f), new Vector2(0, 5));
             temperatureConfirmBtn.onClick.AddListener(OnTemperatureConfirm);
 
+            // 温度区段标签（在 UI 构建时一次性创建）
+            CreateTempZoneLabels();
+
             // ── 步骤4：注水 ──
             pourGroup = CreateChild("PourGroup", rt);
             SetAnchors(pourGroup, new Vector2(0.05f, 0.15f), new Vector2(0.95f, 0.85f), Vector2.zero, Vector2.zero);
@@ -274,6 +287,62 @@ namespace TeaMist.Gameplay
             var stopImg = stopSteepButton.GetComponent<Image>();
             if (stopImg != null) stopImg.color = new Color(0.45f, 0.18f, 0.12f, 0.85f);
             stopSteepButton.onClick.AddListener(OnStopSteep);
+
+            // ── 评分分解面板 ──
+            _breakdownPanel = CreateChild("BreakdownPanel", rt);
+            SetAnchors(_breakdownPanel, new Vector2(0.05f, 0.08f), new Vector2(0.95f, 0.92f), Vector2.zero, Vector2.zero);
+            _breakdownPanel.SetActive(false);
+
+            // 标题
+            var bdTitle = CreateTMP("BDTitle", _breakdownPanel.GetComponent<RectTransform>(),
+                "评分分解", 24, new Vector2(0, 0.88f), new Vector2(1, 1), new Vector2(0, 0), new Vector2(0, 0));
+            bdTitle.alignment = TextAnchor.MiddleCenter;
+            bdTitle.color = new Color(0.82f, 0.70f, 0.50f);
+
+            _breakdownLabels = new Text[BREAKDOWN_COUNT];
+            _breakdownBars = new Image[BREAKDOWN_COUNT];
+            Color[] barColors = {
+                new Color(0.35f, 0.78f, 0.42f),  // 茶叶 - 绿
+                new Color(0.65f, 0.45f, 0.28f),  // 茶具 - 褐
+                new Color(0.30f, 0.65f, 1.00f),  // 水温 - 蓝
+                new Color(0.55f, 0.72f, 0.88f),  // 注水 - 淡蓝
+                new Color(0.82f, 0.62f, 0.35f),  // 出汤 - 金色
+                new Color(0.85f, 0.45f, 0.72f)   // 发现 - 紫
+            };
+
+            for (int i = 0; i < BREAKDOWN_COUNT; i++)
+            {
+                float yTop = 0.82f - i * 0.12f;
+                float yBot = yTop - 0.10f;
+
+                // 标签
+                var lbl = CreateTMP($"BDLabel_{i}", _breakdownPanel.GetComponent<RectTransform>(),
+                    BREAKDOWN_NAMES[i], 18,
+                    new Vector2(0.02f, yBot), new Vector2(0.20f, yTop), Vector2.zero, Vector2.zero);
+                lbl.alignment = TextAnchor.MiddleRight;
+                lbl.color = new Color(0.88f, 0.84f, 0.76f);
+                _breakdownLabels[i] = lbl;
+
+                // 分数条背景
+                var barBg = CreateChild($"BDBarBg_{i}", _breakdownPanel.GetComponent<RectTransform>());
+                var barBgRt = barBg.GetComponent<RectTransform>();
+                barBgRt.anchorMin = new Vector2(0.22f, yBot + 0.02f);
+                barBgRt.anchorMax = new Vector2(0.72f, yTop - 0.02f);
+                barBgRt.offsetMin = barBgRt.offsetMax = Vector2.zero;
+                barBg.AddComponent<Image>().color = new Color(0.18f, 0.16f, 0.13f);
+
+                // 分数条填充
+                var barFill = CreateChild($"BDBarFill_{i}", barBg.GetComponent<RectTransform>());
+                var barFillRt = barFill.GetComponent<RectTransform>();
+                barFillRt.anchorMin = Vector2.zero;
+                barFillRt.anchorMax = Vector2.one;
+                barFillRt.pivot = new Vector2(0, 0.5f);
+                barFillRt.offsetMin = new Vector2(2, 2);
+                barFillRt.offsetMax = new Vector2(-2, -2);
+                var fillImg = barFill.AddComponent<Image>();
+                fillImg.color = barColors[i];
+                _breakdownBars[i] = fillImg;
+            }
 
             _uiBuilt = true;
             Debug.Log("[TeaBrewingUI] UI 层级已自动构建 (5 步面板)");
@@ -388,7 +457,35 @@ namespace TeaMist.Gameplay
             {
                 float elapsed = Time.time - steepStartTime;
                 steepTimerText.text = $"{elapsed:F1}s";
+
+                // 茶汤颜色实时渐变
+                UpdateSteepingTeaColor(elapsed);
             }
+        }
+
+        private void UpdateSteepingTeaColor(float elapsed)
+        {
+            if (teaSoupImage == null) return;
+
+            // 获取目标茶汤颜色
+            Color targetColor = new Color(0.6f, 0.4f, 0.2f); // 默认琥珀色
+            var recipe = TeaBrewingManager.Instance?.GetTargetRecipe();
+            if (recipe != null) targetColor = recipe.liquorColor;
+
+            // 浸泡0秒=清水，理想时间=推荐色，过久=深褐
+            float idealTime = recipe?.idealSteepTime ?? 30f;
+            float ratio = Mathf.Clamp01(elapsed / idealTime);
+
+            // 颜色从浅(清水)到目标色，超时后加深变暗
+            Color lightColor = Color.Lerp(new Color(0.9f, 0.85f, 0.7f, 0.3f), targetColor, ratio);
+            if (elapsed > idealTime)
+            {
+                // 过久 → 向深褐偏移
+                float overRatio = Mathf.Clamp01((elapsed - idealTime) / 15f);
+                lightColor = Color.Lerp(targetColor, new Color(0.35f, 0.22f, 0.10f), overRatio);
+            }
+
+            teaSoupImage.color = new Color(lightColor.r, lightColor.g, lightColor.b, 0.45f);
         }
 
         void OnDestroy()
@@ -407,6 +504,9 @@ namespace TeaMist.Gameplay
         private void OnStepChanged(BrewingStep step)
         {
             HideAllStepGroups();
+
+            // 步骤推进音效
+            AudioManager.Instance?.PlayBrewStepAdvance();
 
             GameObject activeGroup = null;
 
@@ -498,6 +598,7 @@ namespace TeaMist.Gameplay
                     teawareButtons[i].onClick.RemoveAllListeners();
                     teawareButtons[i].onClick.AddListener(() => {
                         teawareDescription.text = teawares[idx].description;
+                        AudioManager.Instance?.PlayBrewSelect();
                         TeaBrewingManager.Instance.MakeChoice(idx);
                     });
                 }
@@ -530,6 +631,7 @@ namespace TeaMist.Gameplay
                     leafButtons[i].onClick.RemoveAllListeners();
                     leafButtons[i].onClick.AddListener(() => {
                         leafDescription.text = recipes[idx].description;
+                        AudioManager.Instance?.PlayBrewSelect();
                         TeaBrewingManager.Instance.MakeChoice(idx);
                     });
                 }
@@ -552,6 +654,9 @@ namespace TeaMist.Gameplay
             temperatureSlider.onValueChanged.AddListener(v => {
                 temperatureValue.text = $"{v:F0}°C";
                 temperatureMeter.color = Color.Lerp(new Color(0.4f, 0.7f, 1f), new Color(1f, 0.4f, 0.2f), (v - 60f) / 40f);
+
+                // 更新区段高亮
+                UpdateTempZones(v);
             });
 
             // 读取目标茶谱的理想温度作为提示
@@ -565,10 +670,50 @@ namespace TeaMist.Gameplay
 
             temperatureSlider.value = defaultTemp;
             temperatureValue.text = $"{defaultTemp:F0}°C";
+            UpdateTempZones(defaultTemp);
+        }
+
+        private Text[] _tempZoneLabels;
+
+        private void CreateTempZoneLabels()
+        {
+            _tempZoneLabels = new Text[3];
+            var parent = tempGroup.GetComponent<RectTransform>();
+            string[] zoneNames = { "凉水", "适中", "沸水" };
+            float[] zoneX = { 0.12f, 0.48f, 0.84f };
+            for (int i = 0; i < 3; i++)
+            {
+                var lbl = CreateTMP($"TempZone_{i}", parent, zoneNames[i], 14,
+                    new Vector2(zoneX[i], 0.28f), new Vector2(zoneX[i] + 0.08f, 0.38f),
+                    Vector2.zero, Vector2.zero);
+                lbl.alignment = TextAnchor.MiddleCenter;
+                lbl.color = new Color(0.45f, 0.42f, 0.38f);
+                _tempZoneLabels[i] = lbl;
+            }
+        }
+
+        private void UpdateTempZones(float currentTemp)
+        {
+
+            // 高亮当前所在区段
+            for (int i = 0; i < 3; i++)
+            {
+                bool active = i switch
+                {
+                    0 => currentTemp < 70f,
+                    1 => currentTemp >= 70f && currentTemp <= 90f,
+                    2 => currentTemp > 90f,
+                    _ => false
+                };
+                _tempZoneLabels[i].color = active
+                    ? new Color(0.95f, 0.85f, 0.55f)   // 金色高亮
+                    : new Color(0.45f, 0.42f, 0.38f);  // 暗灰
+            }
         }
 
         public void OnTemperatureConfirm()
         {
+            AudioManager.Instance?.PlayBrewTempConfirm();
             TeaBrewingManager.Instance?.MakeChoice(temperatureSlider.value);
         }
 
@@ -604,7 +749,10 @@ namespace TeaMist.Gameplay
                     pourButtons[i].GetComponentInChildren<Text>().text = labels[i];
                     PourStyle style = styles[i];
                     pourButtons[i].onClick.RemoveAllListeners();
-                    pourButtons[i].onClick.AddListener(() => TeaBrewingManager.Instance.MakeChoice(style));
+                    pourButtons[i].onClick.AddListener(() => {
+                        AudioManager.Instance?.PlayBrewWaterPour();
+                        TeaBrewingManager.Instance.MakeChoice(style);
+                    });
                 }
                 else
                 {
@@ -644,6 +792,7 @@ namespace TeaMist.Gameplay
         {
             isSteeping = false;
             float steepTime = Time.time - steepStartTime;
+            AudioManager.Instance?.PlayBrewPourTea();
             TeaBrewingManager.Instance?.MakeChoice(steepTime);
 
             // 蒸汽回到正常速率
@@ -675,10 +824,46 @@ namespace TeaMist.Gameplay
                 StartCoroutine(FadeTeaSoup(false));
             }
 
-            // 短暂显示结果后隐藏
+            // 标题 & 评分
             stepTitleText.text = score >= 90 ? "完美！" : score >= 60 ? "不错" : "还行";
             stepHintText.text = $"品质评分: {score}/100";
-            StartCoroutine(HideAfterDelay(1.5f));
+
+            // 结果音效
+            AudioManager.Instance?.PlayBrewResult(score);
+
+            // 评分分解面板
+            ShowBreakdown();
+
+            // 延长显示时间（评分分解需要更多阅读时间）
+            StartCoroutine(HideAfterDelay(3.5f));
+        }
+
+        private void ShowBreakdown()
+        {
+            var breakdown = TeaBrewingManager.Instance?.lastBreakdown;
+            if (!breakdown.HasValue) return;
+            var bd = breakdown.Value;
+
+            _breakdownPanel.SetActive(true);
+
+            float[] scores = { bd.leafScore, bd.teawareScore, bd.tempScore,
+                               bd.pourScore, bd.timeScore, bd.discoveryBonus };
+
+            for (int i = 0; i < BREAKDOWN_COUNT; i++)
+            {
+                // 更新标签：维度名 + 分数/满分
+                _breakdownLabels[i].text = $"{BREAKDOWN_NAMES[i]}  {scores[i]:F0}/{BREAKDOWN_MAX[i]:F0}";
+
+                // 更新条形填充宽度
+                float ratio = Mathf.Clamp01(scores[i] / BREAKDOWN_MAX[i]);
+                var barRt = _breakdownBars[i].GetComponent<RectTransform>();
+                // 通过调整 anchorMax.x 来改变宽度
+                barRt.anchorMax = new Vector2(ratio, 1f);
+
+                // 发现加分特殊处理：没有加分时变灰
+                if (i == 5 && bd.discoveryBonus <= 0f)
+                    _breakdownBars[i].color = new Color(0.3f, 0.3f, 0.3f);
+            }
         }
 
         private IEnumerator HideAfterDelay(float delay)
@@ -763,6 +948,7 @@ namespace TeaMist.Gameplay
             tempGroup.SetActive(false);
             pourGroup.SetActive(false);
             pourTeaGroup.SetActive(false);
+            if (_breakdownPanel != null) _breakdownPanel.SetActive(false);
         }
     }
 }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using TeaMist.Rendering;
 
 namespace TeaMist.Gameplay
 {
@@ -20,6 +21,10 @@ namespace TeaMist.Gameplay
         public SpriteRenderer nearShopRenderer;
         [Tooltip("前景：门框/屋檐/挂帘")]
         public SpriteRenderer foreGroundRenderer;
+
+        [Header("━━━ 氛围组件 ━━━")]
+        [Tooltip("竹帘卷帘控制器（运行时由 SceneAutoSetup 赋值）")]
+        public Rendering.CurtainController curtainController;
 
         [Header("━━━ 茶馆内部坐席点 ━━━")]
         [Tooltip("客人入座位置（世界坐标）")]
@@ -177,6 +182,15 @@ namespace TeaMist.Gameplay
         {
             // 帘幕拉开：场景亮度从暗到明
             float dur = 1.2f;
+
+            // 先触发竹帘卷起
+            if (curtainController != null)
+            {
+                curtainController.RollUp();
+                // 等帘子卷到一半再开始亮度渐变
+                yield return new WaitForSeconds(0.3f);
+            }
+
             float elapsed = 0f;
 
             // 收集所有场景 SpriteRenderer
@@ -231,6 +245,11 @@ namespace TeaMist.Gameplay
         {
             // 帘幕落下：场景亮度从明到暗
             float dur = 0.8f;
+
+            // 触发竹帘放下
+            if (curtainController != null)
+                curtainController.RollDown();
+
             float elapsed = 0f;
 
             var renderers = new List<SpriteRenderer>();

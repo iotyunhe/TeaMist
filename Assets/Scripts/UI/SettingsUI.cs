@@ -580,8 +580,6 @@ namespace TeaMist.UI
                 ilbl.fontSize = 18;
                 ilbl.alignment = TextAlignmentOptions.Left;
                 ilbl.color = new Color(0.98f, 0.95f, 0.90f);
-
-                var item = "unused"; // placeholder — 由 dropdown.options 驱动
             }
 
             dropdown.template = trt;

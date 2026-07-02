@@ -4,6 +4,20 @@ using TeaMist.Data;
 
 namespace TeaMist.Gameplay
 {
+    /// <summary>
+    /// 泡茶评分逐维分解，用于结果面板展示
+    /// </summary>
+    public struct ScoreBreakdown
+    {
+        public float leafScore;      // 茶叶正确 (max 30)
+        public float teawareScore;   // 茶具匹配 (max 30，含保温加成)
+        public float tempScore;      // 水温精准 (max 20)
+        public float pourScore;      // 注水手法 (max 15)
+        public float timeScore;      // 出汤时机 (max 10)
+        public float discoveryBonus; // 隐藏发现 (+0~10)
+        public int total;
+    }
+
 /// <summary>
 /// 茶品匹配算法 —— 根据玩家泡茶选择与目标茶谱，计算匹配分数。
 /// 
@@ -23,16 +37,19 @@ namespace TeaMist.Gameplay
         public static int CalculateMatchScore(
             BrewingChoices choices,
             TeaRecipeSO targetRecipe,
-            TeawareData[] teawares,
-            List<TeaRecipeSO> recipes)
+            TeawareSO[] teawares,
+            List<TeaRecipeSO> recipes,
+            out ScoreBreakdown breakdown)
         {
+            breakdown = new ScoreBreakdown();
+
             if (targetRecipe == null || recipes == null || recipes.Count == 0)
             {
                 // 无目标时纯凭手感打分
-                return CalculateFreestyleScore(choices, teawares);
+                return CalculateFreestyleScore(choices, teawares, out breakdown);
             }
 
-            float score = 0f;
+            float leaf = 0f, teaware = 0f, temp = 0f, pour = 0f, time = 0f, discovery = 0f;
 
             // 1. 茶叶正确性 (30%)
             if (choices.leafIndex >= 0 && choices.leafIndex < recipes.Count)
@@ -40,82 +57,98 @@ namespace TeaMist.Gameplay
                 var selectedLeaf = recipes[choices.leafIndex];
                 if (selectedLeaf.recipeId == targetRecipe.recipeId)
                 {
-                    score += 30f;
+                    leaf = 30f;
                 }
                 else
                 {
-                    // 部分匹配：同类型茶叶有基础分
                     float similarity = CalculateLeafSimilarity(selectedLeaf, targetRecipe);
-                    score += 30f * similarity;
+                    leaf = 30f * similarity;
                 }
             }
 
-            // 2. 茶具匹配 (25%)
+            // 2. 茶具匹配 (25% + 5% 保温加成)
             float teawareHeatRetention = 1f;
             if (choices.teawareIndex >= 0 && choices.teawareIndex < teawares.Length)
             {
-                var teaware = teawares[choices.teawareIndex];
-                float materialScore = targetRecipe.MatchMaterial(teaware.materialType);
-                score += 25f * materialScore;
+                var tw = teawares[choices.teawareIndex];
+                float materialScore = targetRecipe.MatchMaterial(tw.materialType);
+                float baseScore = 25f * materialScore;
 
-                // 保温系数：茶具保温越好，水温衰减越少
-                teawareHeatRetention = teaware.heatRetention;
+                teawareHeatRetention = tw.heatRetention;
                 float retentionMatch = 1f - Mathf.Abs(teawareHeatRetention - targetRecipe.idealHeatRetention);
-                score += 5f * Mathf.Clamp01(retentionMatch);
+                float bonusScore = 5f * Mathf.Clamp01(retentionMatch);
+
+                teaware = baseScore + bonusScore;
             }
 
-            // 3. 水温精准度 (20%) — 含保温衰减
-            // 设定水温随时间递减：经过注水和等待，实际水温 = 设定温 × 保温系数
+            // 3. 水温精准度 (20%)
             float effectiveTemp = Mathf.Lerp(choices.temperature, 60f,
                 (1f - Mathf.Clamp(teawareHeatRetention, 0.3f, 1.5f)) * 0.5f);
             float tempDiff = Mathf.Abs(effectiveTemp - targetRecipe.idealTemperature);
-            float tempScore = 1f - Mathf.Clamp01(tempDiff / 20f);
-            score += 20f * tempScore;
+            float tempRatio = 1f - Mathf.Clamp01(tempDiff / 20f);
+            temp = 20f * tempRatio;
 
             // 4. 注水手法 (15%)
-            float pourScore = targetRecipe.MatchPourStyle(choices.pourStyle);
-            score += 15f * pourScore;
+            float pourRatio = targetRecipe.MatchPourStyle(choices.pourStyle);
+            pour = 15f * pourRatio;
 
-            // 5. 出汤时机 (10%) — 最佳窗口（甜点区）
+            // 5. 出汤时机 (10%)
             float timeDiff = Mathf.Abs(choices.steepTime - targetRecipe.idealSteepTime);
-            float timeScore;
-            if (timeDiff <= 3f)
-                timeScore = 1f;                    // 完美窗口 ±3秒
-            else if (timeDiff <= 8f)
-                timeScore = 0.8f;                  // 不错窗口 ±8秒
-            else if (timeDiff <= 15f)
-                timeScore = 0.5f;                  // 勉强窗口 ±15秒
-            else
-                timeScore = 0.2f;                  // 太早或太晚
-            score += 10f * timeScore;
+            float timeRatio;
+            if (timeDiff <= 3f)      timeRatio = 1f;
+            else if (timeDiff <= 8f)  timeRatio = 0.8f;
+            else if (timeDiff <= 15f) timeRatio = 0.5f;
+            else                      timeRatio = 0.2f;
+            time = 10f * timeRatio;
 
-            // 6. 隐藏发现茶加分
-            float discoveryBonus = CheckDiscoveryTea(choices, teawares, recipes);
-            score += discoveryBonus;
+            // 6. 隐藏发现茶
+            discovery = CheckDiscoveryTea(choices, teawares, recipes);
 
-            return Mathf.Clamp(Mathf.RoundToInt(score), 0, 100);
+            // 汇总
+            float total = leaf + teaware + temp + pour + time + discovery;
+            int finalScore = Mathf.Clamp(Mathf.RoundToInt(total), 0, 100);
+
+            breakdown.leafScore = leaf;
+            breakdown.teawareScore = teaware;
+            breakdown.tempScore = temp;
+            breakdown.pourScore = pour;
+            breakdown.timeScore = time;
+            breakdown.discoveryBonus = discovery;
+            breakdown.total = finalScore;
+
+            return finalScore;
         }
 
         /// <summary>
         /// 无目标茶谱时的自由冲泡评分
         /// </summary>
-        private static int CalculateFreestyleScore(BrewingChoices choices, TeawareData[] teawares)
+        private static int CalculateFreestyleScore(BrewingChoices choices, TeawareSO[] teawares,
+            out ScoreBreakdown breakdown)
         {
-            float score = 50f; // 基础分
+            breakdown = new ScoreBreakdown();
+            float leaf = 0f, teaware = 0f, temp = 0f, pour = 0f, time = 0f;
 
-            // 壶和茶叶都选了 +20
-            if (choices.teawareIndex >= 0) score += 10f;
-            if (choices.leafIndex >= 0) score += 10f;
+            // 壶和茶叶都选了
+            if (choices.teawareIndex >= 0) teaware = 10f;
+            if (choices.leafIndex >= 0) leaf = 10f;
+            // 水温在安全范围内
+            if (choices.temperature >= 70f && choices.temperature <= 95f) temp = 10f;
+            // 注水手法选了就有基础分
+            pour = 5f;
+            // 出汤时间不过长
+            if (choices.steepTime <= 30f) time = 10f;
 
-            // 水温在安全范围内 +10
-            if (choices.temperature >= 70f && choices.temperature <= 95f)
-                score += 10f;
+            float total = leaf + teaware + temp + pour + time + 50f; // 基础分 50
+            int final = Mathf.Clamp(Mathf.RoundToInt(total), 0, 100);
 
-            // 出汤时间不过长 +10
-            if (choices.steepTime <= 30f)
-                score += 10f;
-
-            return Mathf.Clamp(Mathf.RoundToInt(score), 0, 100);
+            breakdown.leafScore = leaf;
+            breakdown.teawareScore = teaware;
+            breakdown.tempScore = temp;
+            breakdown.pourScore = pour;
+            breakdown.timeScore = time;
+            breakdown.discoveryBonus = 0f;
+            breakdown.total = final;
+            return final;
         }
 
         /// <summary>
@@ -123,7 +156,7 @@ namespace TeaMist.Gameplay
         /// </summary>
         private static float CheckDiscoveryTea(
             BrewingChoices choices,
-            TeawareData[] teawares,
+            TeawareSO[] teawares,
             List<TeaRecipeSO> recipes)
         {
             // 白露 + 桂花蜜茶 用竹筒壶 + 冷水 → 冷泡桂花蜜（隐藏发现茶）
