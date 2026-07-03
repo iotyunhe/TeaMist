@@ -29,6 +29,9 @@ namespace TeaMist.Gameplay
         /// <summary>当天可接待的最大客人数（由 TeaHouseManager 动态决定）</summary>
         private int DailyMaxGuests => TeaHouseManager.Instance?.GetMaxGuests() ?? dailyMaxCustomersBase;
 
+        /// <summary>由 TeaHouseManager 调用，更新客容量上限</summary>
+        public void UpdateMaxCustomers(int max) => dailyMaxCustomersBase = max;
+
         /// <summary>今日 NPC 来访计划（由 NPCScheduleManager 生成）</summary>
         private List<NPCVisitPlan> _todayVisitPlans = new List<NPCVisitPlan>();
 
@@ -245,7 +248,9 @@ namespace TeaMist.Gameplay
                 var curSeason = SeasonManager.Instance != null ? SeasonManager.Instance.CurrentSeason : Season.Spring;
                 var curWeather = ConvertWeather(WeatherManager.Instance?.CurrentWeather ?? WeatherType.晴);
                 float gameDay = (float)(Core.TimeManager.Instance?.TotalDaysPlayed ?? 1);
-                var presentNPCs = new List<string> { currentNPCId };
+                var presentNPCs = currentNPCId != null
+                    ? new List<string> { currentNPCId }
+                    : new List<string>();
                 var fragments = new HashSet<string>(
                     Core.NarrativeStateManager.Instance?.GetCollectedFragments() ?? new List<string>());
 

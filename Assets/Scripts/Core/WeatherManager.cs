@@ -283,7 +283,12 @@ namespace TeaMist.Core
             renderer.renderMode = ParticleSystemRenderMode.Stretch;
             renderer.lengthScale = 0.5f;
             renderer.velocityScale = 0.15f;
-            renderer.material = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit"));
+            var rainShader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+            if (rainShader == null)
+                rainShader = Shader.Find("Particles/Standard Unlit");
+            if (rainShader == null)
+                rainShader = Shader.Find("Sprites/Default");
+            renderer.material = new Material(rainShader != null ? rainShader : Shader.Find("Sprites/Default"));
 
             _rainParticles = ps;
         }

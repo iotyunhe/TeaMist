@@ -100,8 +100,11 @@ namespace TeaMist.Core
             foreach (var kv in _cache)
             {
                 if (kv.Value != null)
-                    UnityEngine.Object.Destroy(kv.Value.texture);
-                UnityEngine.Object.Destroy(kv.Value);
+                {
+                    if (kv.Value.texture != null)
+                        UnityEngine.Object.Destroy(kv.Value.texture);
+                    UnityEngine.Object.Destroy(kv.Value);
+                }
             }
             _cache.Clear();
             _loaded = false;

@@ -84,7 +84,13 @@ namespace TeaMist.Core
 
         private void BuildDictionaries()
         {
-            _teaDict = teaRecipes.ToDictionary(t => t.teaName, t => t);
+            _teaDict = new Dictionary<string, TeaRecipeSO>();
+            foreach (var t in teaRecipes)
+            {
+                if (t == null || string.IsNullOrEmpty(t.teaName)) continue;
+                if (!_teaDict.ContainsKey(t.teaName))
+                    _teaDict[t.teaName] = t;
+            }
             _npcDict = npcProfiles.ToDictionary(n => n.npcName, n => n);
             _fragmentDict = fragments.ToDictionary(f => f.fragmentId, f => f);
             _dialogueDict = dialogueConfigs.ToDictionary(d => d.dialogueId, d => d);
@@ -111,8 +117,9 @@ namespace TeaMist.Core
         public TeaRecipeSO GetTeaRecipe(string name) =>
             _teaDict.TryGetValue(name, out var t) ? t : null;
 
-        public TeaRecipeSO GetTeaRecipeById(string id) =>
-            teaRecipes.FirstOrDefault(t => t.teaName == id);
+        public TeaRecipeSO GetTeaRecipeById(string recipeId) =>
+            teaRecipes.FirstOrDefault(t => t.recipeId == recipeId)
+            ?? (teaRecipes.FirstOrDefault(t => t.teaName == recipeId));
 
         public List<TeaRecipeSO> GetAllTeaRecipes() => teaRecipes;
 

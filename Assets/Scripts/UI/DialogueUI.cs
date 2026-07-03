@@ -77,8 +77,13 @@ namespace TeaMist.Dialogue
             if (rt == null) rt = gameObject.AddComponent<RectTransform>();
 
             // 强制清除 DialoguePanel 下所有旧子对象，从零重建，避免序列化残留
+#if UNITY_EDITOR
             for (int i = rt.childCount - 1; i >= 0; i--)
                 DestroyImmediate(rt.GetChild(i).gameObject);
+#else
+            for (int i = rt.childCount - 1; i >= 0; i--)
+                Destroy(rt.GetChild(i).gameObject);
+#endif
             npcDialogueGroup = null; speakerNameText = null; dialogueText = null;
             optionsGroup = null; optionButtons = null; optionLabels = null;
             teaBrewingGroup = null; teaRequestText = null; continueButton = null;
@@ -90,8 +95,8 @@ namespace TeaMist.Dialogue
             var npcRt = npcDialogueGroup.GetComponent<RectTransform>();
             npcRt.anchorMin = npcRt.anchorMax = new Vector2(0.5f, 0.5f);
             npcRt.pivot = new Vector2(0.5f, 0.5f);
-            npcRt.anchoredPosition = new Vector2(0, 50);
-            npcRt.sizeDelta = new Vector2(1600, 420);
+            npcRt.anchoredPosition = new Vector2(0, -100);
+            npcRt.sizeDelta = new Vector2(1600, 480);
 
             if (speakerNameText == null)
             {
@@ -100,7 +105,7 @@ namespace TeaMist.Dialogue
                 // 位置由 FixSpeakerNameLayout() 动态计算，这里只设初始值
                 var snRt = speakerNameText.GetComponent<RectTransform>();
                 snRt.pivot = new Vector2(0, 1);
-                snRt.anchoredPosition = new Vector2(-650, 190);
+                snRt.anchoredPosition = new Vector2(-650, 230);
                 snRt.sizeDelta = new Vector2(300, 38);
             }
             speakerNameText.alignment = TextAnchor.UpperLeft;
@@ -112,8 +117,8 @@ namespace TeaMist.Dialogue
                     new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
                 var dtRt = dialogueText.GetComponent<RectTransform>();
                 dtRt.pivot = new Vector2(0.5f, 0.5f);
-                dtRt.anchoredPosition = new Vector2(0, -50);
-                dtRt.sizeDelta = new Vector2(1500, 300);
+                dtRt.anchoredPosition = new Vector2(0, 30);
+                dtRt.sizeDelta = new Vector2(1500, 340);
             }
             dialogueText.alignment = TextAnchor.MiddleCenter;
             dialogueText.lineSpacing = 1.5f;
@@ -471,7 +476,7 @@ namespace TeaMist.Dialogue
             float npcW = npcRt.rect.width;
             float npcH = npcRt.rect.height;
             const float padLeft = 150f;   // 避开左侧轴头，进入宣纸区
-            const float padTop  = 20f;    // 靠近顶部卷边，进入宣纸区
+            const float padTop  = 10f;    // 靠近顶部卷边，进入宣纸区
             const float nameW   = 300f;
             const float nameH   = 38f;
 
@@ -491,8 +496,8 @@ namespace TeaMist.Dialogue
             rt.anchorMin = new Vector2(0.5f, 0.5f);
             rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.anchoredPosition = new Vector2(0, -50);
-            rt.sizeDelta = new Vector2(1500, 300);
+            rt.anchoredPosition = new Vector2(0, 30);
+            rt.sizeDelta = new Vector2(1500, 340);
         }
 
         private void HideAllGroups()

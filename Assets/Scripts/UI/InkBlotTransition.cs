@@ -187,6 +187,7 @@ namespace TeaMist.UI
 
         private IEnumerator AnimateForward(float duration, Vector2 center)
         {
+            if (_runtimeMat == null) yield break;
             PrepareOverlay(center);
 
             float t = 0;
@@ -205,6 +206,7 @@ namespace TeaMist.UI
 
         private IEnumerator AnimateReverse(float duration, Vector2 center)
         {
+            if (_runtimeMat == null) yield break;
             _runtimeMat.SetVector(PropCenter, new Vector4(center.x, center.y, 0, 0));
             EnsureOverlayVisible();
 
@@ -226,6 +228,7 @@ namespace TeaMist.UI
         private IEnumerator AnimateFullCycle(float fwdDur, float revDur, Vector2 center,
                                               System.Action midpointCb)
         {
+            if (_runtimeMat == null) yield break;
             // Forward
             PrepareOverlay(center);
 

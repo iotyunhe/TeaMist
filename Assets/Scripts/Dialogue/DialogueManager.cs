@@ -97,10 +97,19 @@ namespace TeaMist.Dialogue
 
             // 加载并解析 Yarn 文件
             var lines = LoadAndParseYarnScript(scriptName);
-            foreach (var line in lines)
+            if (lines != null)
             {
-                lineQueue.Enqueue(line);
+                foreach (var line in lines)
+                {
+                    lineQueue.Enqueue(line);
+                }
             }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            else
+            {
+                Debug.LogWarning($"[DialogueManager] 未找到或解析失败 Yarn 脚本: {scriptName}");
+            }
+#endif
 
             dialogueUI?.Show();
             AdvanceDialogue();

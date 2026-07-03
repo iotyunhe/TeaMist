@@ -168,13 +168,10 @@ namespace TeaMist.Gameplay
                 _config.level++;
                 _config.reputationLevel = Mathf.Min(5, (_config.level - 1) / 2);
 
-                // 升级时同步 TeaShopLoop 的客容量
+                // 升级时同步 TeaShopLoop 的客容量（直接调用公共方法）
                 if (TeaShopLoop.Instance != null)
                 {
-                    var field = typeof(TeaShopLoop).GetField("dailyMaxCustomers",
-                        System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                    if (field != null)
-                        field.SetValue(TeaShopLoop.Instance, GetMaxGuests());
+                    TeaShopLoop.Instance.UpdateMaxCustomers(GetMaxGuests());
                 }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD

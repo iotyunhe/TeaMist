@@ -599,7 +599,7 @@ namespace TeaMist.Gameplay
                     teawareButtons[i].onClick.AddListener(() => {
                         teawareDescription.text = teawares[idx].description;
                         AudioManager.Instance?.PlayBrewSelect();
-                        TeaBrewingManager.Instance.MakeChoice(idx);
+                        TeaBrewingManager.Instance?.MakeChoice(idx);
                     });
                 }
                 else
@@ -632,7 +632,7 @@ namespace TeaMist.Gameplay
                     leafButtons[i].onClick.AddListener(() => {
                         leafDescription.text = recipes[idx].description;
                         AudioManager.Instance?.PlayBrewSelect();
-                        TeaBrewingManager.Instance.MakeChoice(idx);
+                        TeaBrewingManager.Instance?.MakeChoice(idx);
                     });
                 }
                 else
@@ -751,7 +751,7 @@ namespace TeaMist.Gameplay
                     pourButtons[i].onClick.RemoveAllListeners();
                     pourButtons[i].onClick.AddListener(() => {
                         AudioManager.Instance?.PlayBrewWaterPour();
-                        TeaBrewingManager.Instance.MakeChoice(style);
+                        TeaBrewingManager.Instance?.MakeChoice(style);
                     });
                 }
                 else

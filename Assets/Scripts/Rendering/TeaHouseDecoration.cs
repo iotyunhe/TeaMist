@@ -230,6 +230,7 @@ namespace TeaMist.Rendering
             vel.enabled = true;
             vel.x = new ParticleSystem.MinMaxCurve(-0.04f, 0.04f);
             vel.y = new ParticleSystem.MinMaxCurve(0.05f, 0.18f);
+            vel.z = new ParticleSystem.MinMaxCurve(0f, 0f);
 
             // 大小：扩散感
             var size = ps.sizeOverLifetime;
@@ -298,6 +299,7 @@ namespace TeaMist.Rendering
             vel.enabled = true;
             vel.x = new ParticleSystem.MinMaxCurve(-0.06f, 0.06f);
             vel.y = new ParticleSystem.MinMaxCurve(0.03f, 0.12f);
+            vel.z = new ParticleSystem.MinMaxCurve(0f, 0f);
 
             var color = ps.colorOverLifetime;
             color.enabled = true;
