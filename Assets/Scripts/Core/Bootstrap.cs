@@ -34,10 +34,10 @@ namespace TeaMist.Core
         public TeaRecipeCollectionUI collectionUI;
         public InkBlotTransition inkBlotTransition;
         public SettingsUI settingsUI;
+        public SaveLoadUI saveLoadUI;
 
         // 调试面板状态
         private GUIStyle _debugGuiStyle;
-        private float _saveToastTime = -99f;
         private int _weatherCycleIndex;
 
         private void Awake()
@@ -183,30 +183,13 @@ namespace TeaMist.Core
             y += gap;
             DrawButton("跳过一天",    x, ref y, btnW, btnH, () => TimeManager.Instance?.AdvanceOneDay());
             DrawButton("茶谱图鉴",    x, ref y, btnW, btnH, () => collectionUI?.Toggle());
+            DrawButton("\ud83d\udcc1 存档", x, ref y, btnW, btnH, () => saveLoadUI?.Toggle());
             DrawButton("\u2699 设置", x, ref y, btnW, btnH, () => settingsUI?.Toggle());
             DrawButton("切换天气",    x, ref y, btnW, btnH, CycleWeather);
             DrawButton("重置状态",    x, ref y, btnW, btnH,
                 () => TeaShopLoop.Instance?.EndCustomerVisitPublic());
 
-            GUI.color = new Color(0.7f, 1f, 0.7f);
-            DrawButton("\ud83d\udcbe 保存进度", x, ref y, btnW, btnH, () =>
-            {
-                GameManager.Instance?.SaveGame();
-                _saveToastTime = Time.time;
-            });
-            GUI.color = Color.white;
-
-            GUI.color = new Color(0.7f, 0.85f, 1f);
-            DrawButton("\ud83d\udcc2 从存档继续", x, ref y, btnW, btnH, () =>
-            {
-                if (SaveManager.HasAnySave())
-                    GameManager.Instance?.RestoreFromSave(
-                        SaveManager.Load(SaveManager.GetLastUsedSlot()));
-            });
-            GUI.color = Color.white;
-
-            if (Time.time - _saveToastTime < 1.5f)
-                GUI.Label(new Rect(x, y, btnW, 20), "\u2713 已保存", _debugGuiStyle);
+            // 快捷存档提示（由 SaveLoadUI.F5 实现）
         }
 
         private void DrawButton(string label, float x, ref float y,

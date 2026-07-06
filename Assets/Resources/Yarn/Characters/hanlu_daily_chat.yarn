@@ -72,10 +72,10 @@ if: weather=雾
 
 endif:
 
-寒露: ……清心茶吧。
-寒露: 淡的就好。
+寒露: ……秋露白。有吗？
+寒露: 这个时候的白茶，最好了。带一点秋露的清冷。
 
-<< tea "请泡一杯清心茶" perfect_match:qingxincha >>
+<< tea "请泡一杯秋露白" perfect_match:qiulubai >>
 
 stop:
 

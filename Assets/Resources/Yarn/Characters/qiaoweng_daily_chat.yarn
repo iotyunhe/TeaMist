@@ -72,10 +72,10 @@ if: weather=雪
 
 endif:
 
-樵翁: 掌柜的，给我泡杯热茶吧。什么都行。
-樵翁: 我不懂茶，但热的就好。砍了一天柴，嘴里没味。
+樵翁: 掌柜的，有松针茶没有？
+樵翁: 不用太讲究。山里头自己采的松针，用粗陶壶随便泡泡就成。
 
-<< tea "请泡一壶热茶" perfect_match:laohongpao >>
+<< tea "请泡一壶松针茶" perfect_match:songzhencha >>
 
 stop:
 

@@ -91,7 +91,8 @@ namespace TeaMist.Gameplay
                     "桂花与蜂蜜调和的花茶，甜香扑鼻。白露最喜欢的茶。",
                     TeaFamily.花茶, FlavorType.甜润, TeaSeason.秋,
                     85f, 30f, TeawareType.瓷壶, 0.8f, PourStyle.MidSpiral,
-                    warmth: 8f, sweetness: 9f, smoothness: 7f));
+                    warmth: 8f, sweetness: 9f, smoothness: 7f,
+                    liquorColor: new Color(0.82f, 0.65f, 0.28f)));  // 金黄
 
                 // 2. 清心茶 — 基础绿茶（绿茶/清香/春）
                 availableTeaRecipes.Add(CreateRuntimeRecipe(
@@ -99,7 +100,8 @@ namespace TeaMist.Gameplay
                     "最简单的清茶，只取山泉和嫩叶。越简单越见功夫。",
                     TeaFamily.绿茶, FlavorType.清香, TeaSeason.春,
                     75f, 20f, TeawareType.玻璃壶, 0.5f, PourStyle.LowFast,
-                    coolness: 7f, bitterness: 3f, smoothness: 8f));
+                    coolness: 7f, bitterness: 3f, smoothness: 8f,
+                    liquorColor: new Color(0.55f, 0.78f, 0.42f)));  // 嫩绿
 
                 // 3. 薄荷茶 — 当归所需（药茶/药香/夏）
                 availableTeaRecipes.Add(CreateRuntimeRecipe(
@@ -107,7 +109,8 @@ namespace TeaMist.Gameplay
                     "新鲜薄荷叶冲泡的药茶，清凉入喉。当归用来治伤的茶。",
                     TeaFamily.药茶, FlavorType.药香, TeaSeason.夏,
                     80f, 15f, TeawareType.盖碗, 0.6f, PourStyle.EdgePour,
-                    coolness: 9f, bitterness: 4f, smoothness: 6f));
+                    coolness: 9f, bitterness: 4f, smoothness: 6f,
+                    liquorColor: new Color(0.62f, 0.85f, 0.58f)));  // 浅绿偏黄
 
                 // 4. 竹叶青 — 竹青所需（绿茶/清香/春）
                 availableTeaRecipes.Add(CreateRuntimeRecipe(
@@ -115,7 +118,8 @@ namespace TeaMist.Gameplay
                     "采自栖霞山竹间的嫩芽，色泽青翠如竹。竹青自己培育的茶。",
                     TeaFamily.绿茶, FlavorType.清香, TeaSeason.春,
                     78f, 25f, TeawareType.玻璃壶, 0.5f, PourStyle.MidSpiral,
-                    coolness: 6f, sweetness: 4f, smoothness: 8f, astringency: 3f));
+                    coolness: 6f, sweetness: 4f, smoothness: 8f, astringency: 3f,
+                    liquorColor: new Color(0.45f, 0.72f, 0.38f)));  // 翠绿
 
                 // 5. 老红袍 — 云鹤老所需（乌龙茶/醇厚/秋）
                 availableTeaRecipes.Add(CreateRuntimeRecipe(
@@ -123,7 +127,8 @@ namespace TeaMist.Gameplay
                     "岩骨花香的乌龙老茶，焙火深厚。云鹤老等了三百年的味道。",
                     TeaFamily.乌龙茶, FlavorType.醇厚, TeaSeason.秋,
                     95f, 45f, TeawareType.紫砂壶, 1.5f, PourStyle.HighSlow,
-                    warmth: 7f, bitterness: 5f, smoothness: 9f, astringency: 4f));
+                    warmth: 7f, bitterness: 5f, smoothness: 9f, astringency: 4f,
+                    liquorColor: new Color(0.65f, 0.32f, 0.15f)));  // 深褐
 
                 // 6. 山泉白茶 — 小山所需（白茶/清爽/冬）
                 availableTeaRecipes.Add(CreateRuntimeRecipe(
@@ -131,10 +136,67 @@ namespace TeaMist.Gameplay
                     "日晒而成的白茶，只取最嫩的芽头。小山说石头也需要喝水。",
                     TeaFamily.白茶, FlavorType.清爽, TeaSeason.冬,
                     70f, 60f, TeawareType.银壶, 1.2f, PourStyle.LowFast,
-                    coolness: 5f, sweetness: 6f, smoothness: 9f));
+                    coolness: 5f, sweetness: 6f, smoothness: 9f,
+                    liquorColor: new Color(0.88f, 0.85f, 0.72f)));  // 浅米白
+
+                // ═══════════════ 新增 6 种 (2026-07-03) ═══════════════
+
+                // 7. 秋露白 — 寒露专属（白茶/花香/秋）
+                availableTeaRecipes.Add(CreateRuntimeRecipe(
+                    "qiulubai", "秋露白",
+                    "待到秋露凝结时，采灵雾山巅的白毫银针。寒露在雾中采摘的稀有白茶，带着一丝灵气的清冷。",
+                    TeaFamily.白茶, FlavorType.花香, TeaSeason.秋,
+                    72f, 50f, TeawareType.银壶, 1.3f, PourStyle.EdgePour,
+                    coolness: 7f, sweetness: 7f, smoothness: 8f, astringency: 2f,
+                    liquorColor: new Color(0.82f, 0.80f, 0.68f), rarity: TeaRarity.少见));
+
+                // 8. 墨韵乌龙 — 青岚专属（乌龙茶/果香/秋）
+                availableTeaRecipes.Add(CreateRuntimeRecipe(
+                    "moyun_wulong", "墨韵乌龙",
+                    "青岚在画室中陈化的乌龙茶，常年浸染松烟墨香。茶汤如淡墨晕开，回甘悠长。",
+                    TeaFamily.乌龙茶, FlavorType.果香, TeaSeason.秋,
+                    92f, 40f, TeawareType.紫砂壶, 1.4f, PourStyle.HighSlow,
+                    warmth: 6f, sweetness: 5f, smoothness: 8f, bitterness: 4f,
+                    liquorColor: new Color(0.42f, 0.35f, 0.28f), rarity: TeaRarity.少见));
+
+                // 9. 松针茶 — 樵翁专属（药茶/药香/冬）
+                availableTeaRecipes.Add(CreateRuntimeRecipe(
+                    "songzhencha", "松针茶",
+                    "樵翁从深山里采的老松针，松脂的清香里有山野的粗犷。驱寒暖身，最适合冬日的山中人。",
+                    TeaFamily.药茶, FlavorType.药香, TeaSeason.冬,
+                    90f, 35f, TeawareType.陶壶, 1.6f, PourStyle.MidSpiral,
+                    warmth: 9f, bitterness: 5f, smoothness: 5f, astringency: 3f,
+                    liquorColor: new Color(0.55f, 0.48f, 0.32f)));  // 松褐色
+
+                // 10. 茉莉春雪（花茶/花香/春）— 春日限定
+                availableTeaRecipes.Add(CreateRuntimeRecipe(
+                    "molichunxue", "茉莉春雪",
+                    "春天第一场雪后采摘的茉莉花，窨制七次而成的极品花茶。花香透骨而不掩茶韵。",
+                    TeaFamily.花茶, FlavorType.花香, TeaSeason.春,
+                    82f, 25f, TeawareType.瓷壶, 0.7f, PourStyle.MidSpiral,
+                    sweetness: 8f, smoothness: 8f, coolness: 4f,
+                    liquorColor: new Color(0.78f, 0.75f, 0.52f), rarity: TeaRarity.稀有));
+
+                // 11. 陈年普洱（黑茶/醇厚/冬）— 老茶客之选
+                availableTeaRecipes.Add(CreateRuntimeRecipe(
+                    "chennianpuer", "陈年普洱",
+                    "云鹤老珍藏了五十年的普洱熟茶，茶饼已陈化出蜜枣的甜香。入口绵滑如丝，是真正老茶客才懂的滋味。",
+                    TeaFamily.黑茶, FlavorType.醇厚, TeaSeason.冬,
+                    98f, 55f, TeawareType.陶壶, 1.8f, PourStyle.HighSlow,
+                    warmth: 9f, smoothness: 9f, bitterness: 3f, sweetness: 5f,
+                    liquorColor: new Color(0.25f, 0.12f, 0.05f), rarity: TeaRarity.稀有));
+
+                // 12. 月华灵芽（灵茶/清香/不限）— 传说级
+                availableTeaRecipes.Add(CreateRuntimeRecipe(
+                    "yuehualingya", "月华灵芽",
+                    "只在月圆之夜绽放的灵茶，每一片芽叶都凝结月华。喝下后眼前会浮现前世的模糊记忆——茶馆传说中藏着的那一味茶。",
+                    TeaFamily.灵茶, FlavorType.清香, TeaSeason.不限,
+                    68f, 90f, TeawareType.银壶, 1.0f, PourStyle.EdgePour,
+                    warmth: 5f, coolness: 5f, sweetness: 7f, smoothness: 10f,
+                    liquorColor: new Color(0.72f, 0.80f, 0.90f), rarity: TeaRarity.传说));
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.Log("[TeaBrewing] 已注入默认茶谱 (6种)");
+                Debug.Log("[TeaBrewing] 已注入默认茶谱 (12种)");
 #endif
             }
         }
@@ -145,7 +207,8 @@ namespace TeaMist.Gameplay
             float temp, float steepTime, TeawareType teaware, float retention,
             PourStyle pour,
             float warmth = 5f, float coolness = 5f, float bitterness = 5f,
-            float sweetness = 5f, float astringency = 5f, float smoothness = 5f)
+            float sweetness = 5f, float astringency = 5f, float smoothness = 5f,
+            Color liquorColor = default, TeaRarity rarity = TeaRarity.常见)
         {
             var so = ScriptableObject.CreateInstance<TeaRecipeSO>();
             so.recipeId = id;
@@ -165,7 +228,8 @@ namespace TeaMist.Gameplay
             so.sweetness = sweetness;
             so.astringency = astringency;
             so.smoothness = smoothness;
-            so.rarity = TeaRarity.常见;
+            so.rarity = rarity;
+            so.liquorColor = liquorColor == default ? new Color(0.6f, 0.4f, 0.2f) : liquorColor;
             return so;
         }
 
@@ -244,26 +308,47 @@ namespace TeaMist.Gameplay
 
             var defaults = new (string id, string name, string desc, TeaFamily family, FlavorType flavor,
                 TeaSeason season, float temp, float steep, TeawareType teaware, float retention,
-                PourStyle pour, float w, float c, float b, float sw, float a, float sm)[]
+                PourStyle pour, float w, float c, float b, float sw, float a, float sm,
+                TeaRarity rarity, Color liquor)[]
             {
+                // ── 原有 6 种 ──
                 ("guihuamicha", "桂花蜜茶", "桂花与蜂蜜调和的花茶，甜香扑鼻。白露最喜欢的茶。",
                     TeaFamily.花茶, FlavorType.甜润, TeaSeason.秋, 85f, 30f, TeawareType.瓷壶, 0.8f, PourStyle.MidSpiral,
-                    8f, 5f, 5f, 9f, 5f, 7f),
+                    8f, 5f, 5f, 9f, 5f, 7f, TeaRarity.常见, new Color(0.82f, 0.65f, 0.28f)),
                 ("qingxincha", "清心茶", "最简单的清茶，只取山泉和嫩叶。越简单越见功夫。",
                     TeaFamily.绿茶, FlavorType.清香, TeaSeason.春, 75f, 20f, TeawareType.玻璃壶, 0.5f, PourStyle.LowFast,
-                    5f, 7f, 3f, 5f, 5f, 8f),
+                    5f, 7f, 3f, 5f, 5f, 8f, TeaRarity.常见, new Color(0.55f, 0.78f, 0.42f)),
                 ("bohecha", "薄荷茶", "新鲜薄荷叶冲泡的药茶，清凉入喉。当归用来治伤的茶。",
                     TeaFamily.药茶, FlavorType.药香, TeaSeason.夏, 80f, 15f, TeawareType.盖碗, 0.6f, PourStyle.EdgePour,
-                    5f, 9f, 4f, 5f, 5f, 6f),
+                    5f, 9f, 4f, 5f, 5f, 6f, TeaRarity.常见, new Color(0.62f, 0.85f, 0.58f)),
                 ("zhu_qing", "竹叶青", "采自栖霞山竹间的嫩芽，色泽青翠如竹。竹青自己培育的茶。",
                     TeaFamily.绿茶, FlavorType.清香, TeaSeason.春, 78f, 25f, TeawareType.玻璃壶, 0.5f, PourStyle.MidSpiral,
-                    5f, 6f, 5f, 4f, 3f, 8f),
+                    5f, 6f, 5f, 4f, 3f, 8f, TeaRarity.常见, new Color(0.45f, 0.72f, 0.38f)),
                 ("laohongpao", "老红袍", "岩骨花香的乌龙老茶，焙火深厚。云鹤老等了三百年的味道。",
                     TeaFamily.乌龙茶, FlavorType.醇厚, TeaSeason.秋, 95f, 45f, TeawareType.紫砂壶, 1.5f, PourStyle.HighSlow,
-                    7f, 5f, 5f, 5f, 4f, 9f),
+                    7f, 5f, 5f, 5f, 4f, 9f, TeaRarity.常见, new Color(0.65f, 0.32f, 0.15f)),
                 ("shanquanbaicha", "山泉白茶", "日晒而成的白茶，只取最嫩的芽头。小山说石头也需要喝水。",
                     TeaFamily.白茶, FlavorType.清爽, TeaSeason.冬, 70f, 60f, TeawareType.银壶, 1.2f, PourStyle.LowFast,
-                    5f, 5f, 5f, 6f, 5f, 9f)
+                    5f, 5f, 5f, 6f, 5f, 9f, TeaRarity.常见, new Color(0.88f, 0.85f, 0.72f)),
+                // ── 新增 6 种 ──
+                ("qiulubai", "秋露白", "待到秋露凝结时，采灵雾山巅的白毫银针。寒露在雾中采摘的稀有白茶。",
+                    TeaFamily.白茶, FlavorType.花香, TeaSeason.秋, 72f, 50f, TeawareType.银壶, 1.3f, PourStyle.EdgePour,
+                    5f, 7f, 5f, 7f, 2f, 8f, TeaRarity.少见, new Color(0.82f, 0.80f, 0.68f)),
+                ("moyun_wulong", "墨韵乌龙", "青岚在画室中陈化的乌龙茶，常年浸染松烟墨香。茶汤如淡墨晕开。",
+                    TeaFamily.乌龙茶, FlavorType.果香, TeaSeason.秋, 92f, 40f, TeawareType.紫砂壶, 1.4f, PourStyle.HighSlow,
+                    6f, 5f, 4f, 5f, 5f, 8f, TeaRarity.少见, new Color(0.42f, 0.35f, 0.28f)),
+                ("songzhencha", "松针茶", "樵翁从深山里采的老松针，松脂的清香里有山野的粗犷。",
+                    TeaFamily.药茶, FlavorType.药香, TeaSeason.冬, 90f, 35f, TeawareType.陶壶, 1.6f, PourStyle.MidSpiral,
+                    9f, 5f, 5f, 5f, 3f, 5f, TeaRarity.常见, new Color(0.55f, 0.48f, 0.32f)),
+                ("molichunxue", "茉莉春雪", "春天第一场雪后采摘的茉莉花，窨制七次而成的极品花茶。",
+                    TeaFamily.花茶, FlavorType.花香, TeaSeason.春, 82f, 25f, TeawareType.瓷壶, 0.7f, PourStyle.MidSpiral,
+                    5f, 4f, 5f, 8f, 5f, 8f, TeaRarity.稀有, new Color(0.78f, 0.75f, 0.52f)),
+                ("chennianpuer", "陈年普洱", "云鹤老珍藏了五十年的普洱熟茶，茶饼已陈化出蜜枣的甜香。",
+                    TeaFamily.黑茶, FlavorType.醇厚, TeaSeason.冬, 98f, 55f, TeawareType.陶壶, 1.8f, PourStyle.HighSlow,
+                    9f, 5f, 3f, 5f, 5f, 9f, TeaRarity.稀有, new Color(0.25f, 0.12f, 0.05f)),
+                ("yuehualingya", "月华灵芽", "只在月圆之夜绽放的灵茶，每一片芽叶都凝结月华。喝下后眼前会浮现前世记忆。",
+                    TeaFamily.灵茶, FlavorType.清香, TeaSeason.不限, 68f, 90f, TeawareType.银壶, 1.0f, PourStyle.EdgePour,
+                    5f, 5f, 5f, 7f, 5f, 10f, TeaRarity.传说, new Color(0.72f, 0.80f, 0.90f))
             };
 
             foreach (var d in defaults)
@@ -288,14 +373,16 @@ namespace TeaMist.Gameplay
                     existing.sweetness = d.sw;
                     existing.astringency = d.a;
                     existing.smoothness = d.sm;
-                    existing.rarity = TeaRarity.常见;
+                    existing.rarity = d.rarity;
+                    existing.liquorColor = d.liquor;
                     UnityEditor.EditorUtility.SetDirty(existing);
                     Debug.Log($"[TeaBrewing] 已更新茶谱资产: {path}");
                 }
                 else
                 {
                     var so = CreateRuntimeRecipe(d.id, d.name, d.desc, d.family, d.flavor, d.season,
-                        d.temp, d.steep, d.teaware, d.retention, d.pour, d.w, d.c, d.b, d.sw, d.a, d.sm);
+                        d.temp, d.steep, d.teaware, d.retention, d.pour, d.w, d.c, d.b, d.sw, d.a, d.sm,
+                        d.liquor, d.rarity);
                     UnityEditor.AssetDatabase.CreateAsset(so, path);
                     Debug.Log($"[TeaBrewing] 已创建茶谱资产: {path}");
                 }
@@ -303,7 +390,7 @@ namespace TeaMist.Gameplay
 
             UnityEditor.AssetDatabase.SaveAssets();
             UnityEditor.AssetDatabase.Refresh();
-            Debug.Log("[TeaBrewing] 6 种默认茶谱资产创建/更新完成");
+            Debug.Log("[TeaBrewing] 12 种默认茶谱资产创建/更新完成");
         }
 #endif
 

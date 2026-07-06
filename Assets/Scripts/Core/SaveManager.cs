@@ -191,6 +191,9 @@ namespace TeaMist.Core
             return PlayerPrefs.GetInt(SETTINGS_KEY_PREFIX + key, defaultValue);
         }
 
+        /// <summary>获取槽位文件路径（公开，供 UI 检查是否存在）</summary>
+        public static string GetSlotPathPublic(int slot) => GetSlotPath(slot);
+
         // ── 私有 ──
 
         private static string GetSlotPath(int slot) =>

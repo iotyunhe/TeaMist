@@ -152,6 +152,17 @@ namespace TeaMist.Core
                 bootstrap.settingsUI.panelGroup = settingsGo.GetComponent<CanvasGroup>();
             }
 
+            // 存档面板
+            if (bootstrap.saveLoadUI == null)
+            {
+                var saveGo = CreateUIPanel("SaveLoadPanel", canvasGo.transform);
+                bootstrap.saveLoadUI = saveGo.AddComponent<SaveLoadUI>();
+                bootstrap.saveLoadUI.panelGroup = saveGo.GetComponent<CanvasGroup>();
+                bootstrap.saveLoadUI.panelGroup.alpha = 0f;
+                bootstrap.saveLoadUI.panelGroup.interactable = false;
+                bootstrap.saveLoadUI.panelGroup.blocksRaycasts = false;
+            }
+
             Debug.Log("[SceneAutoSetup] Canvas UI 创建完成");
         }
 
@@ -208,6 +219,15 @@ namespace TeaMist.Core
             }
 
             var root = new GameObject("ArtSceneRoot");
+
+            // ── 水墨精灵材质管理器（宣纸纹理 + 共享材质）──
+            var inkMat = root.AddComponent<Rendering.InkSpriteMaterial>();
+            inkMat.paperNoiseDensity = 12;
+            inkMat.paperContrast = 0.06f;
+            inkMat.spritePaperStrength = 0.07f;
+            inkMat.spriteEdgeSoftness = 0.04f;
+            Debug.Log("[SceneAutoSetup] InkSpriteMaterial 已添加到 ArtSceneRoot");
+
             var cam = Camera.main;
             if (cam != null)
             {
@@ -340,6 +360,42 @@ namespace TeaMist.Core
             // 立绘管理器
             var charMgr = root.AddComponent<CharacterSpriteManager>();
             charMgr.spriteRoot = root.transform;
+
+            // ── 给所有场景精灵分配水墨材质 ──
+            ApplyInkMaterialToAllSprites(root, inkMat);
+        }
+
+        /// <summary>
+        /// 遍历 ArtSceneRoot 下所有 SpriteRenderer，按深度层分配 InkSprite 材质
+        /// </summary>
+        private static void ApplyInkMaterialToAllSprites(GameObject root, Rendering.InkSpriteMaterial inkMat)
+        {
+            if (inkMat == null || inkMat.SharedMaterial == null) return;
+
+            int applied = 0;
+            foreach (var sr in root.GetComponentsInChildren<SpriteRenderer>(true))
+            {
+                // 根据 sorting layer 和 z 位置推断深度层
+                float depthLayer;
+
+                if (sr.sortingLayerName == SortingLayers.Background)
+                    depthLayer = sr.sortingOrder < SortingLayers.OrderInLayer.BG_Mid ? 0.1f : 0.25f;
+                else if (sr.sortingLayerName == SortingLayers.MainScene)
+                    depthLayer = 0.45f;
+                else if (sr.sortingLayerName == SortingLayers.Props)
+                    depthLayer = 0.6f;
+                else if (sr.sortingLayerName == SortingLayers.Characters)
+                    depthLayer = sr.sortingOrder == SortingLayers.OrderInLayer.Char_Behind ? 0.65f : 0.75f;
+                else if (sr.sortingLayerName == SortingLayers.Foreground)
+                    depthLayer = 0.9f;
+                else
+                    depthLayer = 0.5f;
+
+                inkMat.ApplyToSprite(sr, depthLayer);
+                applied++;
+            }
+
+            Debug.Log($"[SceneAutoSetup] 已为 {applied} 个精灵分配水墨材质");
         }
 
         private static void CreateNpcSprite(string artName, string goName, GameObject root,

@@ -72,10 +72,10 @@ if: weather=雾
 
 endif:
 
-青岚: 麻烦泡一杯清心茶吧。
-青岚: 越简单越好。画了一天的脑子，需要清清。
+青岚: 劳驾，一壶墨韵乌龙。
+青岚: 我自己陈化的茶，放在你这里存着呢。松烟墨的香气，正好配今天画的那幅山水。
 
-<< tea "请泡一杯清心茶" perfect_match:qingxincha >>
+<< tea "请泡一壶墨韵乌龙" perfect_match:moyun_wulong >>
 
 stop:
 

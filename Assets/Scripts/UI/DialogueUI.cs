@@ -117,8 +117,8 @@ namespace TeaMist.Dialogue
                     new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
                 var dtRt = dialogueText.GetComponent<RectTransform>();
                 dtRt.pivot = new Vector2(0.5f, 0.5f);
-                dtRt.anchoredPosition = new Vector2(0, 30);
-                dtRt.sizeDelta = new Vector2(1500, 340);
+                dtRt.anchoredPosition = new Vector2(0, -50);
+                dtRt.sizeDelta = new Vector2(1300, 300);
             }
             dialogueText.alignment = TextAnchor.MiddleCenter;
             dialogueText.lineSpacing = 1.5f;
@@ -328,6 +328,8 @@ namespace TeaMist.Dialogue
             dialogueText.alignment = TextAnchor.UpperLeft;
             dialogueText.fontStyle = FontStyle.Normal;
             dialogueText.color = InkBlack;
+            dialogueText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            dialogueText.verticalOverflow = VerticalWrapMode.Overflow;
 
             // 打字机效果
             if (typewriterCoroutine != null) StopCoroutine(typewriterCoroutine);
@@ -379,16 +381,21 @@ namespace TeaMist.Dialogue
             // 覆写 RectTransform，确保位置正确
             FixDialogueTextLayout();
 
-            // 旁白：隐藏说话人名 + 居中对齐 + 偏灰色调
+            // 旁白：隐藏说话人名 + 文字样式与 NPC 对话保持一致
             speakerNameText.gameObject.SetActive(false);
-            dialogueText.alignment = TextAnchor.MiddleCenter;
+            dialogueText.alignment = TextAnchor.UpperLeft;
             dialogueText.fontStyle = FontStyle.Normal;
-            dialogueText.color = new Color(0.35f, 0.32f, 0.28f);
-            dialogueText.text = text;
+            dialogueText.color = InkBlack;
+            dialogueText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            dialogueText.verticalOverflow = VerticalWrapMode.Overflow;
 
-            // 旁白直接显示继续按钮（无打字机）
+            // 打字机效果 — 与 NPC 对话一致
+            if (typewriterCoroutine != null) StopCoroutine(typewriterCoroutine);
+            typewriterCoroutine = StartCoroutine(TypewriterEffect(text));
+
+            // 继续按钮在打字机结束后才显示
             if (continueButton != null)
-                continueButton.gameObject.SetActive(true);
+                continueButton.gameObject.SetActive(false);
         }
 
         // ━━━ 选项 ━━━
@@ -496,8 +503,8 @@ namespace TeaMist.Dialogue
             rt.anchorMin = new Vector2(0.5f, 0.5f);
             rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.anchoredPosition = new Vector2(0, 30);
-            rt.sizeDelta = new Vector2(1500, 340);
+            rt.anchoredPosition = new Vector2(0, -50);
+            rt.sizeDelta = new Vector2(1300, 300);
         }
 
         private void HideAllGroups()
