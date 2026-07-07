@@ -93,6 +93,11 @@ namespace TeaMist.Core
                 case WeatherType.雪:  ApplySnow();    break;
                 case WeatherType.雾:  ApplyFog();     break;
                 case WeatherType.风:  ApplyWind();    break;
+                // 极端天气：复用基础特效
+                case WeatherType.暴雨: ApplyRain();   break; // 暴雨复用雨特效
+                case WeatherType.暴风雪: ApplySnow(); break; // 暴风雪复用雪特效
+                case WeatherType.大雾: ApplyFog();    break; // 大雾复用雾特效
+                case WeatherType.雷暴: ApplyRain();   break; // 雷暴复用雨特效
                 default: break; // 雷 等未实现特效的天气
             }
 
@@ -332,9 +337,13 @@ namespace TeaMist.Core
             switch (CurrentWeather)
             {
                 case WeatherType.雨:  return -8f;  // 雨水寒凉
+                case WeatherType.暴雨: return -10f; // 暴雨更冷
                 case WeatherType.雪:  return -5f;  // 雪天稍冷
+                case WeatherType.暴风雪: return -12f; // 暴风雪极冷
                 case WeatherType.风:  return -3f;  // 大风散热
                 case WeatherType.雾:  return -2f;  // 雾气微凉
+                case WeatherType.大雾: return -4f;  // 大雾更凉
+                case WeatherType.雷暴: return -6f;  // 雷暴阴冷
                 default: return 0f;
             }
         }
@@ -351,6 +360,12 @@ namespace TeaMist.Core
                 case WeatherType.雪:  return "雪";
                 case WeatherType.雾:  return "雾";
                 case WeatherType.风:  return "风";
+                case WeatherType.雷:  return "雷";
+                // 极端天气
+                case WeatherType.暴雨: return "暴雨";
+                case WeatherType.暴风雪: return "暴风雪";
+                case WeatherType.大雾: return "大雾";
+                case WeatherType.雷暴: return "雷暴";
                 default: return "未知";
             }
         }

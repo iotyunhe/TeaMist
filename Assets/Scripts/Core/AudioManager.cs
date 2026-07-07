@@ -342,10 +342,17 @@ namespace TeaMist.Core
             {
                 case WeatherType.雨:
                 case WeatherType.雷:
+                case WeatherType.暴雨:
+                case WeatherType.雷暴:
                     target = ambientRain;
                     break;
                 case WeatherType.雪:
+                case WeatherType.暴风雪:
                     target = ambientSnow;
+                    break;
+                case WeatherType.雾:
+                case WeatherType.大雾:
+                    target = ambientRain; // 大雾用轻柔环境音
                     break;
                 default:
                     // 晴天/多云/雾/风 → 根据时间选择
