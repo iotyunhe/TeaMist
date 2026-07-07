@@ -134,7 +134,9 @@ namespace TeaMist.Data
 
     public enum WeatherType
     {
-        晴, 多云, 雨, 雪, 雾, 风, 雷
+        晴, 多云, 雨, 雪, 雾, 风, 雷,
+        // 极端天气
+        暴雨, 暴风雪, 大雾, 雷暴
     }
 
     public enum DayTimeSlot

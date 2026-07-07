@@ -137,6 +137,14 @@ namespace TeaMist.Gameplay
             if (CheckSecretEnding())
                 return;
 
+            // 检查极端天气事件（优先级高于普通NPC来访）
+            if (CheckExtremeWeatherEvent())
+                return;
+
+            // 检查季节节点事件（春分/夏至/秋分/冬至）
+            if (CheckSeasonalMilestoneEvent())
+                return;
+
             // 生成今日 NPC 来访计划（日程驱动）
             var season = SeasonManager.Instance != null ? SeasonManager.Instance.CurrentSeason : Season.Spring;
             var weather = ConvertWeather(WeatherManager.Instance?.CurrentWeather ?? WeatherType.晴);
@@ -577,6 +585,11 @@ namespace TeaMist.Gameplay
             WeatherType.雾 => Weather.Mist,
             WeatherType.雷 => Weather.Storm,
             WeatherType.风 => Weather.Cloudy, // 风没有精确映射，归为多云
+            // 极端天气映射
+            WeatherType.暴雨 => Weather.Rain,
+            WeatherType.暴风雪 => Weather.Snow,
+            WeatherType.大雾 => Weather.Mist,
+            WeatherType.雷暴 => Weather.Storm,
             _ => Weather.Any
         };
 
@@ -598,6 +611,83 @@ namespace TeaMist.Gameplay
                 return;
             }
             StartCustomerVisit(npcId);
+        }
+
+        // ━━━ 天气/季节事件 ━━━
+
+        /// <summary>检查极端天气事件（5%概率，季节相关）</summary>
+        private bool CheckExtremeWeatherEvent()
+        {
+            var weather = Core.TimeManager.Instance?.CurrentWeather ?? WeatherType.晴;
+            
+            // 检查是否为极端天气类型
+            string eventName = weather switch
+            {
+                WeatherType.暴雨 => "event_heavy_rain",
+                WeatherType.暴风雪 => "event_blizzard",
+                WeatherType.大雾 => "event_dense_fog",
+                WeatherType.雷暴 => "event_thunderstorm",
+                _ => null
+            };
+
+            if (eventName == null) return false;
+
+            // 检查剧本是否存在
+            var script = Resources.Load<TextAsset>($"Yarn/Characters/{eventName}");
+            if (script == null) return false;
+
+            // 播放极端天气事件剧本
+            var dm = Dialogue.DialogueManager.Instance;
+            if (dm != null)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.Log($"[TeaShopLoop] 极端天气事件触发: {weather} → {eventName}");
+#endif
+                dm.StartDialogue(eventName);
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>检查季节节点事件（春分/夏至/秋分/冬至，每季第45天）</summary>
+        private bool CheckSeasonalMilestoneEvent()
+        {
+            var tm = Core.TimeManager.Instance;
+            if (tm == null) return false;
+
+            int dayInSeason = tm.DayInSeason;
+            
+            // 季节节点：第45天（每季90天的中点）
+            if (dayInSeason != 45) return false;
+
+            string eventName = tm.CurrentSeason switch
+            {
+                Data.Season.春 => "event_spring_equinox",
+                Data.Season.夏 => "event_summer_solstice",
+                Data.Season.秋 => "event_autumn_equinox",
+                Data.Season.冬 => "event_winter_solstice",
+                _ => null
+            };
+
+            if (eventName == null) return false;
+
+            // 检查剧本是否存在
+            var script = Resources.Load<TextAsset>($"Yarn/Characters/{eventName}");
+            if (script == null) return false;
+
+            // 播放季节节点事件剧本
+            var dm = Dialogue.DialogueManager.Instance;
+            if (dm != null)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.Log($"[TeaShopLoop] 季节节点事件触发: {tm.CurrentSeason} → {eventName}");
+#endif
+                dm.StartDialogue(eventName);
+                return true;
+            }
+
+            return false;
         }
     }
 }

@@ -244,6 +244,20 @@ namespace TeaMist.Core
             UnityEngine.Random.InitState(_daySeed);
             int roll = UnityEngine.Random.Range(0, 100);
 
+            // 5% 概率触发极端天气（季节相关）
+            int extremeRoll = UnityEngine.Random.Range(0, 100);
+            if (extremeRoll < 5)
+            {
+                return CurrentSeason switch
+                {
+                    Season.春 => WeatherType.暴雨,   // 春季暴雨
+                    Season.夏 => WeatherType.雷暴,   // 夏季雷暴
+                    Season.秋 => WeatherType.大雾,   // 秋季大雾
+                    Season.冬 => WeatherType.暴风雪, // 冬季暴风雪
+                    _ => WeatherType.晴
+                };
+            }
+
             // 默认概率（实际应从 SeasonConfigSO 读取）
             switch (CurrentSeason)
             {
