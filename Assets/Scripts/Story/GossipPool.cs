@@ -9,6 +9,11 @@ namespace TeaMist.Story
     /// <summary>
     /// 竹青八卦消息池
     /// 按季节/天气/好感度三维索引，动态生成 NPC 社交网络消息
+    /// 
+    /// 增强功能：
+    /// - 动态八卦生成（基于游戏事件）
+    /// - 八卦-对话联动（NPC来访前注入相关八卦）
+    /// - 八卦-碎片联动（特定八卦触发碎片收集）
     /// </summary>
     public class GossipPool : MonoBehaviour
     {
@@ -34,6 +39,7 @@ namespace TeaMist.Story
             public bool isLocked;            // 是否被锁（剧情锁）
             public string unlockCondition;   // 解锁条件描述
             public float expireDay;          // 过期游戏日（0=不过期）
+            public string linkedFragmentId;   // 关联碎片ID（揭示后自动收集）
         }
 
         public enum GossipTone
@@ -165,6 +171,76 @@ namespace TeaMist.Story
                     tone = GossipTone.Secret, seasonRelevance = Season.All, weatherRelevance = Weather.Any, minAffection = 5, isLocked = true,
                     unlockCondition = "霜降好感度≥5"
                 },
+
+                // --- 三次来访后的八卦（深度线联动） ---
+                new GossipMessage {
+                    id = "gossip_100", senderId = "zhuqing", senderName = "竹青",
+                    subjectNpcId = "bailu", subjectName = "白露",
+                    content = "你知道吗？白露昨天教溪边的石头唱歌。我没开玩笑。石头真的在听。",
+                    tone = GossipTone.Excited, seasonRelevance = Season.All, weatherRelevance = Weather.Any, minAffection = 3
+                },
+                new GossipMessage {
+                    id = "gossip_101", senderId = "zhuqing", senderName = "竹青",
+                    subjectNpcId = "danggui", subjectName = "当归",
+                    content = "当归姐姐在茶馆旁边开了间小铺子！卖一种叫「归处」的茶。我喝了一口——不苦不甜，但很安心。",
+                    tone = GossipTone.Casual, seasonRelevance = Season.All, weatherRelevance = Weather.Any, minAffection = 3
+                },
+                new GossipMessage {
+                    id = "gossip_102", senderId = "bailu", senderName = "白露",
+                    subjectNpcId = "yunhelao", subjectName = "云鹤老",
+                    content = "云鹤爷爷把发光的珠子放在茶馆了！晚上好漂亮！像月亮掉进了屋里。",
+                    tone = GossipTone.Excited, seasonRelevance = Season.All, weatherRelevance = Weather.Any, minAffection = 3
+                },
+                new GossipMessage {
+                    id = "gossip_103", senderId = "zhuqing", senderName = "竹青",
+                    subjectNpcId = "xiaoshan", subjectName = "小山",
+                    content = "小山今天开口说了两个字。两个字！我活了三百年，第一次听见石头说话。你猜他说了什么？「我在」。就这两个字。我哭了。",
+                    tone = GossipTone.Sad, seasonRelevance = Season.All, weatherRelevance = Weather.Any, minAffection = 2
+                },
+                new GossipMessage {
+                    id = "gossip_104", senderId = "zhuqing", senderName = "竹青",
+                    subjectNpcId = "qinglan", subjectName = "青岚",
+                    content = "青岚在茶馆墙上画了一扇窗。那扇窗……真的能看见远山。我不知道怎么做到的，但他做到了。",
+                    tone = GossipTone.Mysterious, seasonRelevance = Season.All, weatherRelevance = Weather.Any, minAffection = 2
+                },
+                new GossipMessage {
+                    id = "gossip_105", senderId = "zhuqing", senderName = "竹青",
+                    subjectNpcId = "hanlu", subjectName = "寒露",
+                    content = "寒露姐姐越来越淡了。她说节气灵靠人的记忆活着。山下的人越来越不记得节气了……所以她在变。",
+                    tone = GossipTone.Concerned, seasonRelevance = Season.Autumn, weatherRelevance = Weather.Any, minAffection = 2
+                },
+                new GossipMessage {
+                    id = "gossip_106", senderId = "qiaoweng", senderName = "樵翁",
+                    subjectNpcId = "xiaoshan", subjectName = "小山",
+                    content = "小山今天在茶馆门口站了一整天。不动。但你能感觉到它在听。听茶馆里的声音。",
+                    tone = GossipTone.Casual, seasonRelevance = Season.All, weatherRelevance = Weather.Any, minAffection = 2
+                },
+
+                // --- 季节联动八卦 ---
+                new GossipMessage {
+                    id = "gossip_200", senderId = "zhuqing", senderName = "竹青",
+                    subjectNpcId = "", subjectName = "山",
+                    content = "春天了。整座山都在呼吸。泥土松软了，溪水变清了。连茶馆的柱子都发出了叹息——像从冬天的梦里醒过来。",
+                    tone = GossipTone.Casual, seasonRelevance = Season.Spring, weatherRelevance = Weather.Any, minAffection = 0
+                },
+                new GossipMessage {
+                    id = "gossip_201", senderId = "bailu", senderName = "白露",
+                    subjectNpcId = "", subjectName = "溪谷",
+                    content = "夏天了！溪谷的水变温了！晚上有萤火虫！我抓了一只放在瓶子里，但它不亮了。是不是因为……它想回家了？",
+                    tone = GossipTone.Casual, seasonRelevance = Season.Summer, weatherRelevance = Weather.Clear, minAffection = 1
+                },
+                new GossipMessage {
+                    id = "gossip_202", senderId = "yunhelao", senderName = "云鹤老",
+                    subjectNpcId = "", subjectName = "旧仙台",
+                    content = "秋天的月亮最圆的时候，旧仙台会发出一种很轻的声音。不是钟声——是回忆的声音。三百年前我就听见了。",
+                    tone = GossipTone.Mysterious, seasonRelevance = Season.Autumn, weatherRelevance = Weather.Clear, minAffection = 2
+                },
+                new GossipMessage {
+                    id = "gossip_203", senderId = "qiaoweng", senderName = "樵翁",
+                    subjectNpcId = "", subjectName = "山道",
+                    content = "雪落了。山道封了。但茶馆的灯还亮着。走夜路的人看见灯，就知道前面有人。",
+                    tone = GossipTone.Casual, seasonRelevance = Season.Winter, weatherRelevance = Weather.Snow, minAffection = 1
+                },
             };
         }
 
@@ -283,9 +359,177 @@ namespace TeaMist.Story
 
         public List<GossipMessage> GetActiveGossips() => activeGossips;
 
+        // ============ 八卦-对话联动 ============
+
         /// <summary>
-        /// 获取竹青小笺格式的八卦文本
+        /// 获取关于指定NPC的八卦（用于对话前注入叙事）
         /// </summary>
+        public List<GossipMessage> GetGossipsAboutNpc(string npcId)
+        {
+            var result = new List<GossipMessage>();
+            foreach (var g in activeGossips)
+            {
+                if (g.subjectNpcId == npcId || g.senderId == npcId)
+                    result.Add(g);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 生成关于指定NPC的对话前叙事文本
+        /// </summary>
+        public string GeneratePreDialogueNarration(string npcId, string npcName)
+        {
+            var gossips = GetGossipsAboutNpc(npcId);
+            if (gossips.Count == 0) return null;
+
+            var gossip = gossips[Random.Range(0, gossips.Count)];
+
+            // 根据消息来源生成不同风格的叙事
+            if (gossip.senderId == "zhuqing")
+            {
+                return $"【柜台上放着一片竹叶，叶脉里似乎写着什么。你拿起来一看——是竹青的小笺：】\n{GetGossipAsNote(gossip)}";
+            }
+            else if (gossip.senderId == "bailu")
+            {
+                return $"【门口有几颗野莓，排成了一排。像是白露特意留给你的消息。旁边还有一行歪歪扭扭的字：】\n{gossip.content}\n\n——{gossip.senderName}";
+            }
+            else if (gossip.senderId == "yunhelao")
+            {
+                return $"【茶馆角落的桌上多了一颗莹白的珠子。旁边有一张旧纸条：】\n{gossip.content}\n\n——{gossip.senderName}";
+            }
+            else if (gossip.senderId == "qiaoweng")
+            {
+                return $"【门口多了一捆柴，柴上刻着几个字：】\n{gossip.content}\n\n——{gossip.senderName}";
+            }
+            else
+            {
+                return $"【你注意到一些关于{npcName}的消息：】\n{gossip.content}\n\n——{gossip.senderName}";
+            }
+        }
+
+        // ============ 动态八卦生成 ============
+
+        /// <summary>
+        /// 根据游戏事件动态生成八卦并加入消息池
+        /// </summary>
+        public void OnGameEvent(string eventType, Dictionary<string, object> eventData)
+        {
+            switch (eventType)
+            {
+                case "npc_third_visit":
+                    GenerateThirdVisitGossip(eventData);
+                    break;
+                case "fragment_collected":
+                    GenerateFragmentGossip(eventData);
+                    break;
+                case "perfect_brew":
+                    GenerateBrewGossip();
+                    break;
+                case "season_changed":
+                    // 季节变化时刷新八卦池
+                    break;
+            }
+        }
+
+        private void GenerateThirdVisitGossip(Dictionary<string, object> data)
+        {
+            string npcId = data.ContainsKey("npcId") ? data["npcId"].ToString() : "";
+            string gossipId = $"dynamic_third_{npcId}";
+
+            // 避免重复
+            foreach (var g in gossipPool)
+                if (g.id == gossipId) return;
+
+            string content = npcId switch
+            {
+                "bailu" => "白露今天哭了。不是伤心——是那种很高兴很高兴的高兴。她说她终于把一首歌的秘密告诉了对的人。",
+                "zhuqing" => "竹青把一本书放在了茶馆里。她说那是整座山的记忆。我翻了翻——里面连我昨天打了几个喷嚏都记了。",
+                "danggui" => "当归在茶馆旁边开了间铺子。卖的茶不苦不甜，但喝完之后手不抖了。她说这叫「归处」。",
+                "yunhelao" => "云鹤老把三颗珠子留在了茶馆。他说那是他等了三百年的人留下的。现在珠子发光了——像一盏灯。",
+                "xiaoshan" => "小山说话了。不是纹路——是真的说话了。它说了一个字：「谢」。就一个字。但整座山都听见了。",
+                "qinglan" => "青岚给茶馆看了一幅三百年前的画。画上的茶馆和现在一模一样。柜台后面站着的人——也一模一样。",
+                "hanlu" => "寒露把一片永远不会融化的霜放在了窗台上。她说只要有人记得她，她就不会消失。",
+                "qiaoweng" => "樵翁说庙后面的山上有一棵树，是山的命。他说只要有人记得那棵树，山就不会消失。",
+                _ => null
+            };
+
+            if (content == null) return;
+
+            gossipPool.Add(new GossipMessage
+            {
+                id = gossipId,
+                senderId = "zhuqing",
+                senderName = "竹青",
+                subjectNpcId = npcId,
+                subjectName = Core.DataManager.GetNpcDisplayName(npcId),
+                content = content,
+                tone = GossipTone.Excited,
+                seasonRelevance = Season.All,
+                weatherRelevance = Weather.Any,
+                minAffection = 0
+            });
+        }
+
+        private void GenerateFragmentGossip(Dictionary<string, object> data)
+        {
+            // 当收集到特定碎片时，生成关联八卦
+            string fragmentId = data.ContainsKey("fragmentId") ? data["fragmentId"].ToString() : "";
+            string gossipId = $"frag_gossip_{fragmentId}";
+
+            foreach (var g in gossipPool)
+                if (g.id == gossipId) return;
+
+            // 某些碎片收集后自动解锁关联八卦
+            string linkedContent = fragmentId switch
+            {
+                "fragment_nine_towers" => "云鹤老说的九座楼台——我查了县志。真的存在过。九座。一座不少。但县志上说它们不是被毁的——是「自行消失」。",
+                "fragment_crane_pearls" => "你知道鹤羽珠在夜里会发光吗？我看见了。光里面好像有一个人影。一个很温柔的人影。",
+                "fragment_xiaoshan_portrait" => "小山消失后留下的那道水墨痕迹——我临摹了下来。放在竹林里一晚，第二天痕迹变成了一个字：「在」。",
+                _ => null
+            };
+
+            if (linkedContent == null) return;
+
+            gossipPool.Add(new GossipMessage
+            {
+                id = gossipId,
+                senderId = "zhuqing",
+                senderName = "竹青",
+                subjectNpcId = "",
+                subjectName = "山",
+                content = linkedContent,
+                tone = GossipTone.Mysterious,
+                seasonRelevance = Season.All,
+                weatherRelevance = Weather.Any,
+                minAffection = 0
+            });
+        }
+
+        private void GenerateBrewGossip()
+        {
+            string gossipId = $"dynamic_brew_{DateTime.Now.DayOfYear}";
+            foreach (var g in gossipPool)
+                if (g.id == gossipId) return;
+
+            gossipPool.Add(new GossipMessage
+            {
+                id = gossipId,
+                senderId = "bailu",
+                senderName = "白露",
+                subjectNpcId = "",
+                subjectName = "茶馆",
+                content = "今天的茶……发光了！不是普通的发光——是那种很温柔的、像月亮掉进了杯子里的光。我从来没见过泡茶能泡出这种效果！",
+                tone = GossipTone.Excited,
+                seasonRelevance = Season.All,
+                weatherRelevance = Weather.Any,
+                minAffection = 0,
+                expireDay = Core.TimeManager.Instance != null ?
+                    (float)(TimeManager.Instance.TotalDaysPlayed + 3) : 0
+            });
+        }
+
+        /// <summary>获取竹青小笺格式的八卦文本</summary>
         public string GetGossipAsNote(GossipMessage gossip)
         {
             string toneEmoji;

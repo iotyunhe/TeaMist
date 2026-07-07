@@ -279,6 +279,21 @@ namespace TeaMist.Gameplay
 
             // 将 NPC ID 映射到 Yarn 剧本文件名
             string scriptName = GetNPCScriptName(currentNPCId);
+
+            // 八卦-对话联动：在对话前注入关于该NPC的八卦消息
+            if (Story.GossipPool.Instance != null && dm != null)
+            {
+                string npcName = Core.DataManager.GetNpcDisplayName(currentNPCId);
+                string gossipNarration = Story.GossipPool.Instance.GeneratePreDialogueNarration(currentNPCId, npcName);
+                if (gossipNarration != null)
+                {
+                    dm.AddPreDialogueNarration(gossipNarration);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    Debug.Log($"[TeaShopLoop] 八卦注入: 关于{npcName}的对话前叙事");
+#endif
+                }
+            }
+
             dm?.StartDialogue(scriptName);
         }
 
@@ -305,7 +320,12 @@ namespace TeaMist.Gameplay
                 };
 
                 if (thirdName != null && Resources.Load<TextAsset>($"Yarn/Characters/{thirdName}") != null)
+                {
+                    // 触发三次来访八卦生成
+                    Story.GossipPool.Instance?.OnGameEvent("npc_third_visit",
+                        new Dictionary<string, object> { { "npcId", npcId } });
                     return thirdName;
+                }
             }
 
             // 第三次及以后 → 日常闲聊剧本（季节/天气/好感度分支）
@@ -370,6 +390,8 @@ namespace TeaMist.Gameplay
             if (qualityScore >= 95)
             {
                 TryDropFragment("fragment_tea_perfect", "泡茶完美品质");
+                // 触发完美泡茶八卦
+                Story.GossipPool.Instance?.OnGameEvent("perfect_brew", null);
             }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -416,6 +438,9 @@ namespace TeaMist.Gameplay
             Core.AudioManager.Instance?.PlayFragmentGet();
             // 茶馆声望经验
             TeaHouseManager.Instance?.OnFragmentCollected(fragmentId);
+            // 触发碎片收集八卦生成
+            Story.GossipPool.Instance?.OnGameEvent("fragment_collected",
+                new Dictionary<string, object> { { "fragmentId", fragmentId } });
         }
 
         /// <summary>尝试掉落碎片（检查是否已收集）</summary>
