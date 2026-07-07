@@ -38,6 +38,8 @@ namespace TeaMist.Core
 
         // 调试面板状态
         private GUIStyle _debugGuiStyle;
+        private GUIStyle _debugBoxStyle;
+        private GUIStyle _debugButtonStyle;
         private int _weatherCycleIndex;
 
         private void Awake()
@@ -49,6 +51,7 @@ namespace TeaMist.Core
             EnsureSingleton<NPCScheduleManager>("NPCScheduleManager");
             EnsureSingleton<TeaHouseManager>("TeaHouseManager");
             EnsureSingleton<InkRenderSettings>("InkRenderSettings");
+            EnsureSingleton<InkSpriteMaterial>("InkSpriteMaterial");
             EnsureSingleton<DialogueManager>("DialogueManager");
             EnsureSingleton<TeaBrewingManager>("TeaBrewingManager");
             EnsureSingleton<WeatherManager>("WeatherManager");
@@ -142,23 +145,17 @@ namespace TeaMist.Core
         {
             if (!devMode) return;
 
-            if (_debugGuiStyle == null)
-            {
-                _debugGuiStyle = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 14,
-                    normal = { textColor = Color.white }
-                };
-            }
+            EnsureDebugStyles();
 
-            float btnW = 200, btnH = 28, gap = 4;
-            float x = Screen.width - btnW - 10;
-            float y = 10;
+            float btnW = 200, btnH = 30, gap = 5;
+            float x = Screen.width - btnW - 12;
+            float y = 12;
 
             var weatherName = WeatherManager.Instance != null
                 ? WeatherManager.WeatherName(WeatherManager.Instance.CurrentWeather) : "-";
             bool isIdle = TeaShopLoop.Instance?.GetCurrentState() == TeaShopLoop.ShopState.Idle;
 
+            GUI.Box(new Rect(x - 4, y - 4, btnW + 8, 70 + 8), "", _debugBoxStyle);
             GUI.Label(new Rect(x, y, btnW, 70),
                 $"茶烟起处 · 调试面板\n" +
                 $"天气:{weatherName} 状态:{(isIdle ? "空闲" : "忙")}\n" +
@@ -174,7 +171,8 @@ namespace TeaMist.Core
                 bool enabled = GUI.enabled;
                 GUI.enabled = isIdle;
                 if (GUI.Button(new Rect(x, y, btnW, btnH),
-                    isIdle ? $"> {DataManager.GetNpcDisplayName(npcId)}来访" : $"  {DataManager.GetNpcDisplayName(npcId)}（等待中）"))
+                    isIdle ? $"> {DataManager.GetNpcDisplayName(npcId)}来访" : $"  {DataManager.GetNpcDisplayName(npcId)}（等待中）",
+                    _debugButtonStyle))
                     TryForceVisit(npcId);
                 GUI.enabled = enabled;
                 y += btnH + gap;
@@ -192,10 +190,58 @@ namespace TeaMist.Core
             // 快捷存档提示（由 SaveLoadUI.F5 实现）
         }
 
+        private void EnsureDebugStyles()
+        {
+            if (_debugGuiStyle != null) return;
+
+            _debugGuiStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 14,
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = new Color(0.94f, 0.90f, 0.82f) }
+            };
+
+            _debugBoxStyle = new GUIStyle(GUI.skin.box)
+            {
+                normal = { background = MakeInkTexture(32, 32, new Color(0.12f, 0.10f, 0.08f, 0.82f), 0.08f) }
+            };
+
+            _debugButtonStyle = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = 14,
+                alignment = TextAnchor.MiddleCenter,
+                normal = { background = MakeInkTexture(32, 32, new Color(0.22f, 0.18f, 0.13f, 0.85f), 0.06f), textColor = new Color(0.94f, 0.90f, 0.82f) },
+                hover = { background = MakeInkTexture(32, 32, new Color(0.30f, 0.24f, 0.17f, 0.90f), 0.06f), textColor = new Color(1f, 0.96f, 0.88f) },
+                active = { background = MakeInkTexture(32, 32, new Color(0.15f, 0.12f, 0.09f, 0.95f), 0.06f), textColor = new Color(0.85f, 0.82f, 0.74f) },
+                onNormal = { background = MakeInkTexture(32, 32, new Color(0.22f, 0.18f, 0.13f, 0.85f), 0.06f), textColor = new Color(0.94f, 0.90f, 0.82f) }
+            };
+        }
+
+        private Texture2D MakeInkTexture(int width, int height, Color baseColor, float noiseStrength)
+        {
+            var tex = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Repeat;
+            tex.filterMode = FilterMode.Bilinear;
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    float n = Mathf.PerlinNoise(x * 0.15f + 0.1f, y * 0.15f + 0.1f) - 0.5f;
+                    Color c = baseColor;
+                    c.r += n * noiseStrength;
+                    c.g += n * noiseStrength;
+                    c.b += n * noiseStrength;
+                    tex.SetPixel(x, y, c);
+                }
+            }
+            tex.Apply();
+            return tex;
+        }
+
         private void DrawButton(string label, float x, ref float y,
             float w, float h, System.Action action)
         {
-            if (GUI.Button(new Rect(x, y, w, h), label))
+            if (GUI.Button(new Rect(x, y, w, h), label, _debugButtonStyle))
                 action();
             y += h + 4;
         }

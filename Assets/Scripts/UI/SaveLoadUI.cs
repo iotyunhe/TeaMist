@@ -176,7 +176,7 @@ namespace TeaMist.UI
             maskRt.anchorMax = Vector2.one;
             maskRt.sizeDelta = Vector2.zero;
             var maskImg = mask.AddComponent<Image>();
-            maskImg.color = new Color(0f, 0f, 0f, 0.45f);
+            ApplyInkStyle(maskImg, new Color(0f, 0f, 0f, 0.45f), 0.5f);
             var maskBtn = mask.AddComponent<Button>();
             maskBtn.onClick.AddListener(Hide);
 
@@ -188,7 +188,7 @@ namespace TeaMist.UI
             pRt.pivot = Vector2.one * 0.5f;
             pRt.sizeDelta = new Vector2(panelW, panelH);
             var pImg = panel.AddComponent<Image>();
-            pImg.color = panelBgColor;
+            ApplyInkStyle(pImg, panelBgColor, 1.0f);
 
             // 标题
             var title = MakeTMP("Title", pRt, "— 存档管理 —", 32);
@@ -253,7 +253,7 @@ namespace TeaMist.UI
             sRt.anchoredPosition = anchoredPos;
             sRt.sizeDelta = size;
             var sImg = entry.root.AddComponent<Image>();
-            sImg.color = slotBgColor;
+            ApplyInkStyle(sImg, slotBgColor, 1.5f);
 
             // 槽位编号
             entry.slotLabel = MakeTMP("SlotLabel", sRt, $"槽位 {slot}", 20);
@@ -389,7 +389,7 @@ namespace TeaMist.UI
             rt.sizeDelta = size;
 
             var img = go.AddComponent<Image>();
-            img.color = bgColor;
+            ApplyInkStyle(img, bgColor, 1.5f);
 
             var btn = go.AddComponent<Button>();
             btn.onClick.AddListener(onClick);
@@ -403,6 +403,13 @@ namespace TeaMist.UI
             lbl.raycastTarget = false;
 
             return btn;
+        }
+        // ━━━ 水墨材质工具 ━━━
+
+        private static void ApplyInkStyle(Image image, Color color, float paperTiling = 1.0f)
+        {
+            if (image == null) return;
+            TeaMist.Rendering.InkUIHelper.ApplyToImage(image, color, 0.12f, paperTiling, 0.08f, 0.06f, 0.25f, 0.05f);
         }
     }
 }

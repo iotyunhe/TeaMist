@@ -113,7 +113,7 @@ namespace TeaMist.UI
             bgRt.anchorMin = Vector2.zero; bgRt.anchorMax = Vector2.one;
             bgRt.offsetMin = bgRt.offsetMax = Vector2.zero;
             var bgImg = bg.AddComponent<Image>();
-            bgImg.color = new Color(0.08f, 0.07f, 0.06f, 0.92f);
+            ApplyInkStyle(bgImg, new Color(0.08f, 0.07f, 0.06f, 0.92f), 1.5f);
 
             // 标题 "设置"
             CreateLabel("Title", "设  置", 36, TextAlignmentOptions.Center, new Vector2(0, 250));
@@ -360,7 +360,7 @@ namespace TeaMist.UI
             brt.anchorMin = Vector2.zero; brt.anchorMax = Vector2.one;
             brt.offsetMin = new Vector2(0, 8); brt.offsetMax = new Vector2(0, -8);
             var bgImg = bgGo.AddComponent<Image>();
-            bgImg.color = new Color(0.45f, 0.40f, 0.34f);
+            ApplyInkStyle(bgImg, new Color(0.45f, 0.40f, 0.34f), 2.0f);
 
             var fillArea = CreateUIElement("FillArea", sliderArea.transform);
             var fat = fillArea.GetComponent<RectTransform>();
@@ -372,7 +372,7 @@ namespace TeaMist.UI
             frt.anchorMin = Vector2.zero; frt.anchorMax = Vector2.one;
             frt.offsetMin = frt.offsetMax = Vector2.zero;
             var fillImg = fillGo.AddComponent<Image>();
-            fillImg.color = new Color(0.75f, 0.42f, 0.22f);  // 朱砂色
+            ApplyInkStyle(fillImg, new Color(0.75f, 0.42f, 0.22f), 4.0f);  // 朱砂色
 
             var handleArea = CreateUIElement("HandleSlideArea", sliderArea.transform);
             var hat = handleArea.GetComponent<RectTransform>();
@@ -384,7 +384,7 @@ namespace TeaMist.UI
             hrt.anchorMin = hrt.anchorMax = new Vector2(0.5f, 0.5f);
             hrt.sizeDelta = new Vector2(16, 26);
             var handleImg = handleGo.AddComponent<Image>();
-            handleImg.color = new Color(0.95f, 0.92f, 0.86f);
+            ApplyInkStyle(handleImg, new Color(0.95f, 0.92f, 0.86f), 5.0f);
 
             var slider = sliderArea.AddComponent<Slider>();
             slider.targetGraphic = handleImg;
@@ -435,14 +435,14 @@ namespace TeaMist.UI
             brt.anchorMin = Vector2.zero; brt.anchorMax = Vector2.one;
             brt.offsetMin = brt.offsetMax = Vector2.zero;
             var bgImg = bgGo.AddComponent<Image>();
-            bgImg.color = new Color(0.45f, 0.40f, 0.34f);
+            ApplyInkStyle(bgImg, new Color(0.45f, 0.40f, 0.34f), 3.0f);
 
             var checkGo = CreateUIElement("Checkmark", toggleGo.transform);
             var crt2 = checkGo.GetComponent<RectTransform>();
             crt2.anchorMin = Vector2.zero; crt2.anchorMax = Vector2.one;
             crt2.offsetMin = new Vector2(4, 4); crt2.offsetMax = new Vector2(-4, -4);
             var checkImg = checkGo.AddComponent<Image>();
-            checkImg.color = new Color(0.62f, 0.34f, 0.18f);
+            ApplyInkStyle(checkImg, new Color(0.62f, 0.34f, 0.18f), 4.0f);
 
             var toggle = toggleGo.AddComponent<Toggle>();
             toggle.targetGraphic = bgImg;
@@ -462,7 +462,7 @@ namespace TeaMist.UI
             rt.anchoredPosition = pos;
 
             var img = go.AddComponent<Image>();
-            img.color = new Color(0.52f, 0.42f, 0.28f);
+            ApplyInkStyle(img, new Color(0.52f, 0.42f, 0.28f), 1.5f);
 
             var lblGo = CreateUIElement("Label", go.transform);
             var lrt = lblGo.GetComponent<RectTransform>();
@@ -516,7 +516,7 @@ namespace TeaMist.UI
             drt.offsetMin = new Vector2(10, 4); drt.offsetMax = new Vector2(0, -4);
 
             var ddImg = ddGo.AddComponent<Image>();
-            ddImg.color = new Color(0.45f, 0.40f, 0.34f);
+            ApplyInkStyle(ddImg, new Color(0.45f, 0.40f, 0.34f), 2.0f);
 
             var dropdown = ddGo.AddComponent<TMP_Dropdown>();
             dropdown.options = Resolutions.Select(r => new TMP_Dropdown.OptionData(r.label)).ToList();
@@ -529,7 +529,7 @@ namespace TeaMist.UI
             trt.sizeDelta = new Vector2(0, 200);
             trt.anchoredPosition = new Vector2(0, -2);
             var templateImg = template.AddComponent<Image>();
-            templateImg.color = new Color(0.35f, 0.30f, 0.24f);
+            ApplyInkStyle(templateImg, new Color(0.35f, 0.30f, 0.24f), 2.0f);
             var templateScroll = template.AddComponent<ScrollRect>();
             templateScroll.horizontal = false;
             templateScroll.movementType = ScrollRect.MovementType.Clamped;
@@ -565,7 +565,7 @@ namespace TeaMist.UI
                 irt.anchoredPosition = new Vector2(0, -i * 30);
 
                 var itemBg = itemGo.AddComponent<Image>();
-                itemBg.color = new Color(0, 0, 0, 0); // 透明默认
+                ApplyInkStyle(itemBg, new Color(0, 0, 0, 0), 3.0f); // 透明默认，高亮时由 Toggle 改色
 
                 var itemToggle = itemGo.AddComponent<Toggle>();
                 itemToggle.targetGraphic = itemBg;
@@ -587,6 +587,14 @@ namespace TeaMist.UI
             template.gameObject.SetActive(false); // 初始隐藏
 
             return dropdown;
+        }
+
+        // ━━━ 水墨材质工具 ━━━
+
+        private static void ApplyInkStyle(Image image, Color color, float paperTiling = 1.0f)
+        {
+            if (image == null) return;
+            TeaMist.Rendering.InkUIHelper.ApplyToImage(image, color, 0.12f, paperTiling, 0.08f, 0.06f, 0.25f, 0.05f);
         }
 
         // ━━━ 工具 ━━━

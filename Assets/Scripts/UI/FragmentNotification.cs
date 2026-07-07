@@ -4,6 +4,7 @@ using System.Collections;
 using TeaMist.Core;
 using TeaMist.Data;
 using TeaMist.Gameplay;
+using TeaMist.Rendering;
 
 namespace TeaMist.UI
 {
@@ -140,7 +141,7 @@ namespace TeaMist.UI
             bgRt.offsetMin = Vector2.zero;
             bgRt.offsetMax = Vector2.zero;
             _background = bgGo.AddComponent<Image>();
-            _background.color = BgColor;
+            ApplyInkStyle(_background, BgColor, 1.5f);
             var bgOutline = bgGo.AddComponent<Outline>();
             bgOutline.effectColor = TitleColor;
             bgOutline.effectDistance = new Vector2(2, -2);
@@ -205,6 +206,12 @@ namespace TeaMist.UI
             if (string.IsNullOrEmpty(text)) return "";
             if (text.Length <= maxLen) return text;
             return text.Substring(0, maxLen) + "……";
+        }
+
+        private static void ApplyInkStyle(Image image, Color color, float paperTiling = 1.0f)
+        {
+            if (image == null) return;
+            InkUIHelper.ApplyToImage(image, color, 0.12f, paperTiling, 0.08f, 0.06f, 0.25f, 0.05f);
         }
     }
 }

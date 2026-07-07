@@ -146,7 +146,7 @@ namespace TeaMist.Dialogue
                 btnRt.sizeDelta = new Vector2(1580, btnH);
 
                 var btnImg = btnGo.AddComponent<Image>();
-                btnImg.color = sealBgColor;
+                ApplyInkStyle(btnImg, sealBgColor, 1.5f);
                 btnGo.AddComponent<Outline>().effectColor = sealColor;
                 btnGo.GetComponent<Outline>().effectDistance = new Vector2(2, -2);
 
@@ -195,7 +195,7 @@ namespace TeaMist.Dialogue
                 contRt.anchoredPosition = Vector2.zero;
                 contRt.sizeDelta = new Vector2(180, 48);
                 var contImg = contGo.AddComponent<Image>();
-                contImg.color = new Color(0.2f, 0.18f, 0.14f, 0.65f);
+                ApplyInkStyle(contImg, new Color(0.2f, 0.18f, 0.14f, 0.65f), 1.5f);
                 continueButton = contGo.AddComponent<Button>();
                 continueButton.onClick.AddListener(OnContinueClicked);
 
@@ -240,13 +240,16 @@ namespace TeaMist.Dialogue
         {
             ArtLoader.LoadAll();
             var parchment = ArtLoader.Find("宣纸");
-            if (parchment == null) return;
 
             var img = GetComponent<Image>();
             if (img == null) img = gameObject.AddComponent<Image>();
-            img.sprite = parchment;
-            img.type = Image.Type.Sliced;
-            img.color = new Color(1f, 1f, 1f, 0.92f);
+            if (parchment != null)
+            {
+                img.sprite = parchment;
+                img.type = Image.Type.Sliced;
+                img.color = new Color(1f, 1f, 1f, 0.92f);
+            }
+            ApplyInkStyle(img, img.color, 1.0f);
         }
 
         void Start()
@@ -529,6 +532,14 @@ namespace TeaMist.Dialogue
                 case "栖迟": return new Color(0.35f, 0.30f, 0.40f);
                 default:  return new Color(0.82f, 0.80f, 0.76f);
             }
+        }
+
+        // ━━━ 水墨材质工具 ━━━
+
+        private static void ApplyInkStyle(Image image, Color color, float paperTiling = 1.0f)
+        {
+            if (image == null) return;
+            TeaMist.Rendering.InkUIHelper.ApplyToImage(image, color, 0.10f, paperTiling, 0.06f, 0.05f, 0.20f, 0.04f);
         }
     }
 }

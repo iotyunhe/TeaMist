@@ -110,7 +110,8 @@ namespace TeaMist.Gameplay
 
             // ── 背景 ──
             var bg = CreateChild("BG", rt);
-            bg.AddComponent<Image>().color = new Color(0.18f, 0.16f, 0.13f, 0.88f);
+            var bgImg = bg.AddComponent<Image>();
+            ApplyInkStyle(bgImg, new Color(0.18f, 0.16f, 0.13f, 0.88f), 1.0f);
             SetAnchors(bg, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
 
             // ── 标题 ──
@@ -140,7 +141,7 @@ namespace TeaMist.Gameplay
                 dotRt.anchoredPosition = new Vector2(10 + i * 45, 0);
                 dotRt.sizeDelta = new Vector2(14, 14);
                 var dotImg = dot.AddComponent<Image>();
-                dotImg.color = new Color(0.3f, 0.3f, 0.3f);
+                ApplyInkStyle(dotImg, new Color(0.3f, 0.3f, 0.3f), 5.0f);
                 stepIndicators[i] = dot;
             }
 
@@ -213,7 +214,8 @@ namespace TeaMist.Gameplay
 
             // 背景条（深色轨道）
             var bgGo = CreateChild("Background", sliderRt);
-            bgGo.AddComponent<Image>().color = new Color(0.22f, 0.19f, 0.14f, 0.8f);
+            var sliderBgImg = bgGo.AddComponent<Image>();
+            ApplyInkStyle(sliderBgImg, new Color(0.22f, 0.19f, 0.14f, 0.8f), 2.5f);
             var bgRt = bgGo.GetComponent<RectTransform>();
             bgRt.anchorMin = Vector2.zero; bgRt.anchorMax = Vector2.one;
             bgRt.offsetMin = new Vector2(0, 4); bgRt.offsetMax = new Vector2(0, -4);
@@ -229,7 +231,7 @@ namespace TeaMist.Gameplay
             fillRt.anchorMin = Vector2.zero; fillRt.anchorMax = Vector2.one;
             fillRt.offsetMin = Vector2.zero; fillRt.offsetMax = Vector2.zero;
             temperatureMeter = fillGo.AddComponent<Image>();
-            temperatureMeter.color = new Color(0.3f, 0.65f, 1f);
+            ApplyInkStyle(temperatureMeter, new Color(0.3f, 0.65f, 1f), 5.0f);
             temperatureSlider.fillRect = fillRt;
 
             // 手柄区 + 手柄（金色圆点）
@@ -244,7 +246,7 @@ namespace TeaMist.Gameplay
             handleRt.sizeDelta = new Vector2(24, 34);
             handleRt.anchoredPosition = Vector2.zero;
             var handleImg = handleGo.AddComponent<Image>();
-            handleImg.color = new Color(0.75f, 0.62f, 0.35f);  // 金色
+            ApplyInkStyle(handleImg, new Color(0.75f, 0.62f, 0.35f), 5.0f);  // 金色
             temperatureSlider.handleRect = handleRt;
 
             // 确认按钮（锚点同时指定 X 和 Y 区间，确保宽高都大于 0）
@@ -329,7 +331,8 @@ namespace TeaMist.Gameplay
                 barBgRt.anchorMin = new Vector2(0.22f, yBot + 0.02f);
                 barBgRt.anchorMax = new Vector2(0.72f, yTop - 0.02f);
                 barBgRt.offsetMin = barBgRt.offsetMax = Vector2.zero;
-                barBg.AddComponent<Image>().color = new Color(0.18f, 0.16f, 0.13f);
+                var barBgImg = barBg.AddComponent<Image>();
+                ApplyInkStyle(barBgImg, new Color(0.18f, 0.16f, 0.13f), 4.0f);
 
                 // 分数条填充
                 var barFill = CreateChild($"BDBarFill_{i}", barBg.GetComponent<RectTransform>());
@@ -340,7 +343,7 @@ namespace TeaMist.Gameplay
                 barFillRt.offsetMin = new Vector2(2, 2);
                 barFillRt.offsetMax = new Vector2(-2, -2);
                 var fillImg = barFill.AddComponent<Image>();
-                fillImg.color = barColors[i];
+                ApplyInkStyle(fillImg, barColors[i], 6.0f);
                 _breakdownBars[i] = fillImg;
             }
 
@@ -390,7 +393,7 @@ namespace TeaMist.Gameplay
             rt.offsetMin = offsetMin;
             rt.offsetMax = Vector2.zero;
             var img = go.AddComponent<Image>();
-            img.color = new Color(0.25f, 0.22f, 0.18f, 0.75f);
+            ApplyInkStyle(img, new Color(0.25f, 0.22f, 0.18f, 0.75f), 1.5f);
             var btn = go.AddComponent<Button>();
             var lbl = CreateTMP("Label", rt, label, 22,
                 new Vector2(0, 0), new Vector2(1, 1), new Vector2(10, 0), new Vector2(-10, 0));
@@ -410,7 +413,7 @@ namespace TeaMist.Gameplay
             rt.offsetMin = new Vector2(5, 3);
             rt.offsetMax = new Vector2(-5, -3);
             var img = go.AddComponent<Image>();
-            img.color = new Color(0.25f, 0.22f, 0.18f, 0.7f);
+            ApplyInkStyle(img, new Color(0.25f, 0.22f, 0.18f, 0.7f), 1.5f);
             var btn = go.AddComponent<Button>();
             var lbl = CreateTMP("Label", rt, "", 20,
                 new Vector2(0, 0), new Vector2(1, 1), new Vector2(10, 0), new Vector2(-10, 0));
@@ -905,7 +908,7 @@ namespace TeaMist.Gameplay
             rt.anchorMax = new Vector2(0.7f, 0.65f);
             rt.offsetMin = rt.offsetMax = Vector2.zero;
             teaSoupImage = go.AddComponent<Image>();
-            teaSoupImage.color = new Color(0.8f, 0.55f, 0.2f, 0f);  // 初始透明
+            ApplyInkStyle(teaSoupImage, new Color(0.8f, 0.55f, 0.2f, 0f), 3.0f);  // 初始透明
             teaSoupImage.raycastTarget = false;
         }
 
@@ -949,6 +952,14 @@ namespace TeaMist.Gameplay
             pourGroup.SetActive(false);
             pourTeaGroup.SetActive(false);
             if (_breakdownPanel != null) _breakdownPanel.SetActive(false);
+        }
+
+        // ━━━ 水墨材质工具 ━━━
+
+        private static void ApplyInkStyle(Image image, Color color, float paperTiling = 1.0f)
+        {
+            if (image == null) return;
+            TeaMist.Rendering.InkUIHelper.ApplyToImage(image, color, 0.10f, paperTiling, 0.06f, 0.05f, 0.20f, 0.04f);
         }
     }
 }

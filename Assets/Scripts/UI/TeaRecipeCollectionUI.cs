@@ -165,6 +165,7 @@ namespace TeaMist.UI
             var bgImg = GetComponent<Image>();
             if (bgImg == null) bgImg = gameObject.AddComponent<Image>();
             bgImg.color = parchmentColor;
+            ApplyInkStyle(bgImg, parchmentColor, 1.0f);
 
             // ── 标题栏 ──
             BuildTitleBar(rt);
@@ -205,7 +206,7 @@ namespace TeaMist.UI
             lineRt.pivot = new Vector2(0.5f, 0);
             lineRt.sizeDelta = new Vector2(0, 2);
             var lineImg = line.AddComponent<Image>();
-            lineImg.color = goldAccent;
+            ApplyInkStyle(lineImg, goldAccent, 4.0f);
 
             // 关闭按钮
             var closeBtn = CreateChild("CloseBtn", tbRt);
@@ -216,7 +217,7 @@ namespace TeaMist.UI
             closeRt.anchoredPosition = new Vector2(-15, -12);
             closeRt.sizeDelta = new Vector2(40, 40);
             var closeImg = closeBtn.AddComponent<Image>();
-            closeImg.color = new Color(0.4f, 0.15f, 0.12f, 0.6f);
+            ApplyInkStyle(closeImg, new Color(0.4f, 0.15f, 0.12f, 0.6f), 3.0f);
             var closeButton = closeBtn.AddComponent<Button>();
             closeButton.onClick.AddListener(Hide);
             var closeLabel = CreateTMP("X", closeRt, "✕", 22,
@@ -395,9 +396,10 @@ namespace TeaMist.UI
 
             // 背景
             var bg = card.AddComponent<Image>();
-            bg.color = isUnlocked
+            Color cardColor = isUnlocked
                 ? new Color(0.92f, 0.95f, 0.88f, 0.5f)
                 : new Color(0.85f, 0.83f, 0.80f, 0.35f);
+            ApplyInkStyle(bg, cardColor, 2.0f);
 
             // 图标区域
             if (recipe.icon != null)
@@ -509,7 +511,8 @@ namespace TeaMist.UI
             stRt.offsetMin = Vector2.zero;
             stRt.offsetMax = Vector2.zero;
             var stImg = scrollToggle.AddComponent<Image>();
-            stImg.color = _longScrollMode ? new Color(0.25f, 0.22f, 0.18f, 0.7f) : new Color(0.5f, 0.45f, 0.4f, 0.5f);
+            Color stColor = _longScrollMode ? new Color(0.25f, 0.22f, 0.18f, 0.7f) : new Color(0.5f, 0.45f, 0.4f, 0.5f);
+            ApplyInkStyle(stImg, stColor, 2.0f);
             var stBtn = scrollToggle.AddComponent<Button>();
             stBtn.onClick.AddListener(() => {
                 _longScrollMode = !_longScrollMode;
@@ -576,9 +579,10 @@ namespace TeaMist.UI
             cRt.offsetMax = Vector2.zero;
 
             var bg = card.AddComponent<Image>();
-            bg.color = isCollected
+            Color fragCardColor = isCollected
                 ? new Color(0.92f, 0.95f, 0.88f, 0.5f)
                 : new Color(0.88f, 0.86f, 0.82f, 0.25f);
+            ApplyInkStyle(bg, fragCardColor, 2.0f);
 
             // 碎片类型图标
             string typeIcon = frag.fragmentType switch
@@ -663,9 +667,10 @@ namespace TeaMist.UI
             rt.offsetMax = new Vector2(-2, 0);
 
             var img = go.AddComponent<Image>();
-            img.color = _fragmentChapterFilter == chapterValue
+            Color filtColor = _fragmentChapterFilter == chapterValue
                 ? new Color(0.75f, 0.70f, 0.60f, 0.6f)
                 : new Color(0.55f, 0.50f, 0.42f, 0.3f);
+            ApplyInkStyle(img, filtColor, 2.0f);
 
             var btn = go.AddComponent<Button>();
             var tmp = CreateTMP("Label", rt, label, 12,
@@ -726,7 +731,7 @@ namespace TeaMist.UI
             cRt.offsetMax = Vector2.zero;
 
             var bg = card.AddComponent<Image>();
-            bg.color = new Color(0.92f, 0.90f, 0.86f, 0.45f);
+            ApplyInkStyle(bg, new Color(0.92f, 0.90f, 0.86f, 0.45f), 2.0f);
 
             // NPC 名称
             var nameText = CreateTMP("Name", cRt, npc.npcName, 26,
@@ -768,7 +773,7 @@ namespace TeaMist.UI
             barBgRt.offsetMin = Vector2.zero;
             barBgRt.offsetMax = Vector2.zero;
             var barBgImg = barBg.AddComponent<Image>();
-            barBgImg.color = new Color(0.75f, 0.72f, 0.68f, 0.4f);
+            ApplyInkStyle(barBgImg, new Color(0.75f, 0.72f, 0.68f, 0.4f), 4.0f);
 
             var barFill = CreateChild("AffBarFill", barBgRt);
             var barFillRt = barFill.GetComponent<RectTransform>();
@@ -778,11 +783,12 @@ namespace TeaMist.UI
             barFillRt.offsetMin = Vector2.zero;
             barFillRt.offsetMax = Vector2.zero;
             var barFillImg = barFill.AddComponent<Image>();
-            barFillImg.color = affection >= 60
+            Color affFillColor = affection >= 60
                 ? new Color(0.3f, 0.6f, 0.3f)
                 : affection >= 30
                     ? goldAccent
                     : new Color(0.6f, 0.5f, 0.3f);
+            ApplyInkStyle(barFillImg, affFillColor, 5.0f);
         }
 
         // ━━━ 分页控件 ━━━
@@ -814,7 +820,7 @@ namespace TeaMist.UI
                 prevRt.anchoredPosition = new Vector2(margin, bottomY);
                 prevRt.sizeDelta = new Vector2(btnW, btnH);
                 var prevImg = prevBtn.AddComponent<Image>();
-                prevImg.color = new Color(0.25f, 0.22f, 0.18f, 0.6f);
+                ApplyInkStyle(prevImg, new Color(0.25f, 0.22f, 0.18f, 0.6f), 2.0f);
                 var prevButton = prevBtn.AddComponent<Button>();
                 prevButton.onClick.AddListener(() => onPrev());
                 var prevLabel = CreateTMP("Label", prevRt, "◁ 上一页", 14,
@@ -834,7 +840,7 @@ namespace TeaMist.UI
                 nextRt.anchoredPosition = new Vector2(-margin, bottomY);
                 nextRt.sizeDelta = new Vector2(btnW, btnH);
                 var nextImg = nextBtn.AddComponent<Image>();
-                nextImg.color = new Color(0.25f, 0.22f, 0.18f, 0.6f);
+                ApplyInkStyle(nextImg, new Color(0.25f, 0.22f, 0.18f, 0.6f), 2.0f);
                 var nextButton = nextBtn.AddComponent<Button>();
                 nextButton.onClick.AddListener(() => onNext());
                 var nextLabel = CreateTMP("Label", nextRt, "下一页 ▷", 14,
@@ -857,7 +863,7 @@ namespace TeaMist.UI
             rt.offsetMax = Vector2.zero;
 
             var img = go.AddComponent<Image>();
-            img.color = tabInactiveColor;
+            ApplyInkStyle(img, tabInactiveColor, 1.5f);
 
             var btn = go.AddComponent<Button>();
 
@@ -953,7 +959,7 @@ namespace TeaMist.UI
                 cRt.offsetMax = Vector2.zero;
 
                 var bg = chapterBlock.AddComponent<Image>();
-                bg.color = new Color(0.25f, 0.22f, 0.18f, 0.55f);
+                ApplyInkStyle(bg, new Color(0.25f, 0.22f, 0.18f, 0.55f), 1.5f);
 
                 // 章节点击折叠/展开
                 int capturedCh = ch;
@@ -1025,9 +1031,10 @@ namespace TeaMist.UI
 
                     bool has = collected.Contains(f.fragmentId);
                     var cellBg = cell.AddComponent<Image>();
-                    cellBg.color = has
+                    Color cellColor = has
                         ? new Color(0.30f, 0.55f, 0.30f, 0.6f)
                         : new Color(0.35f, 0.33f, 0.30f, 0.3f);
+                    ApplyInkStyle(cellBg, cellColor, 4.0f);
 
                     var cellIcon = CreateTMP("Icon", cellRt,
                         has ? "◆" : "◇", 18,
@@ -1064,7 +1071,7 @@ namespace TeaMist.UI
             StartCoroutine(PopupScaleIn(rt));
 
             var popBg = _fragmentDetailPopup.AddComponent<Image>();
-            popBg.color = new Color(0.12f, 0.10f, 0.08f, 0.95f);
+            ApplyInkStyle(popBg, new Color(0.12f, 0.10f, 0.08f, 0.95f), 1.2f);
 
             var outline = _fragmentDetailPopup.AddComponent<Outline>();
             outline.effectColor = goldAccent;
@@ -1103,7 +1110,7 @@ namespace TeaMist.UI
             closeRt.offsetMin = Vector2.zero;
             closeRt.offsetMax = Vector2.zero;
             var closeBg = closeGo.AddComponent<Image>();
-            closeBg.color = new Color(0.4f, 0.15f, 0.10f, 0.8f);
+            ApplyInkStyle(closeBg, new Color(0.4f, 0.15f, 0.10f, 0.8f), 3.0f);
             var closeBtn = closeGo.AddComponent<Button>();
             closeBtn.onClick.AddListener(HideFragmentDetail);
             var closeX = CreateTMP("X", closeRt, "✕", 18,
@@ -1139,6 +1146,14 @@ namespace TeaMist.UI
                 yield return null;
             }
             target.localScale = Vector3.one;
+        }
+
+        // ━━━ 水墨材质工具 ━━━
+
+        private static void ApplyInkStyle(Image image, Color color, float paperTiling = 1.0f)
+        {
+            if (image == null) return;
+            TeaMist.Rendering.InkUIHelper.ApplyToImage(image, color, 0.10f, paperTiling, 0.06f, 0.05f, 0.20f, 0.04f);
         }
     }
 }

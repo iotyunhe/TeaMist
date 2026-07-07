@@ -56,3 +56,6 @@ Firebase/
 
 # Asset Store tools cache
 AssetStoreTools*
+
+# Debug log
+debug.log
