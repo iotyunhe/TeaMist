@@ -221,7 +221,7 @@ namespace TeaMist.Gameplay
             Core.AudioManager.Instance?.PlayDoorBell();
 
             // 茶馆声望：客人到访
-            TeaHouseManager.Instance?.OnCustomerEntered();
+            TeaHouseManager.Instance?.OnCustomerEntered(npcId);
 
             // 日程管理器：注册到访
             NPCScheduleManager.Instance?.RegisterArrival(npcId);

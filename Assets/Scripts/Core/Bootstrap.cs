@@ -50,6 +50,7 @@ namespace TeaMist.Core
             EnsureSingleton<SeasonManager>("SeasonManager");
             EnsureSingleton<NPCScheduleManager>("NPCScheduleManager");
             EnsureSingleton<TeaHouseManager>("TeaHouseManager");
+            EnsureSingleton<ShopSynergyManager>("ShopSynergyManager");
             EnsureSingleton<InkRenderSettings>("InkRenderSettings");
             EnsureSingleton<InkSpriteMaterial>("InkSpriteMaterial");
             EnsureSingleton<DialogueManager>("DialogueManager");
