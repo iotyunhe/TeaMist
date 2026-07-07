@@ -484,6 +484,18 @@ namespace TeaMist.Core
                 ("fragment_yunhelao_third", "三百年后的灯",
                     "云鹤老把三颗鹤羽珠留在了茶馆。他说：「珠子这种东西——有人珍惜它，它才有光。」三百年前他在归雁楼底下弹琴，一只白鹤从水底飞出来。三百年后他把珠子放在你的窗台上。等待不是站在原地——是一边等，一边给这座山讲故事。",
                     5, FragmentType.记忆, "yunhelao", FragmentSource.NPC对话),
+                ("fragment_xiaoshan_third", "磐",
+                    "小山想起了自己的名字——磐。「磐石无转移。」他说。那些银色的纹路在表面组成了一幅画：一座山，山顶有灯，山脚下有茶馆。茶馆门口站着一个人——是你。他叫自己小山，也叫磐。不管叫什么，因为是你叫的。",
+                    6, FragmentType.记忆, "xiaoshan", FragmentSource.NPC对话),
+                ("fragment_qinglan_third", "三百年前的画",
+                    "青岚的师父三百年前画过这间茶馆。师父的师父也画过。每一代画师画的都是同一间茶馆，柜台后面站着同一个人。也许茶馆一直在等一个人回来。也许那个人就是你。也许这不重要——重要的是此刻你在这里，茶在泡着，灯在亮着。",
+                    4, FragmentType.叙事, "qinglan", FragmentSource.NPC对话),
+                ("fragment_hanlu_third", "永不融化的霜",
+                    "寒露把一片永远不会融化的霜留在了茶馆里。她说：「只要有人记得——我就不会真的消失。」然后她像霜一样融化在空气里。每到秋天，那片霜就会变得特别亮。被记住的人，永远不会真正离开。",
+                    2, FragmentType.记忆, "hanlu", FragmentSource.NPC对话),
+                ("fragment_qiaoweng_third", "山的命",
+                    "樵翁说庙后面的山上有一棵树——它的根从山顶伸到山脚，是这座山的命。他守庙其实是在守那棵树。他说：「有人知道它在——它就能一直在。」就像这座山。就像这间茶馆。只要有人记得，就不会消失。",
+                    4, FragmentType.叙事, "qiaoweng", FragmentSource.NPC对话),
 
                 // ━━━ 秘密结局碎片 ━━━
                 ("fragment_heart_of_mountain", "山之心",

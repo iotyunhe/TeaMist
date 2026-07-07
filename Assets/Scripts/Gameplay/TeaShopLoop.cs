@@ -297,6 +297,10 @@ namespace TeaMist.Gameplay
                     "zhuqing"  => "zhuqing_third_visit",
                     "danggui"  => "danggui_third_visit",
                     "yunhelao" => "yunhelao_third_visit",
+                    "xiaoshan" => "xiaoshan_third_visit",
+                    "qinglan"  => "qinglan_third_visit",
+                    "hanlu"    => "hanlu_third_visit",
+                    "qiaoweng" => "qiaoweng_third_visit",
                     _          => null
                 };
 
