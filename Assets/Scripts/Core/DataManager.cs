@@ -470,6 +470,25 @@ namespace TeaMist.Core
                 ("fragment_tea_season_spring", "春茶·明前",
                     "清明前的第一泡新茶，带着露水的清甜。喝一口，整个春天都在嘴里化开了。",
                     9, FragmentType.记忆, "", FragmentSource.泡茶成功),
+
+                // ━━━ 三次来访碎片（深度线）━━━
+                ("fragment_bailu_third", "山的心跳",
+                    "白露说：「溪谷的歌声，是山的心跳。」这句话是一个从山下来的人教她唱的。那个人说，如果有一天遇到一个愿意给她泡茶的人，就把这句话告诉他。你听了。你记住了。于是山的心跳，也在你这里了。",
+                    5, FragmentType.记忆, "bailu", FragmentSource.NPC对话),
+                ("fragment_zhuqing_third", "栖霞志",
+                    "竹青把「栖霞志」留在了茶馆里。从这座山的第一棵树，到最后一只离开的妖怪。从九座楼台到现在的茶馆。她说：「叶子记得所有经过的风。」她也是其中一片叶子。而你——你是风经过的地方。",
+                    5, FragmentType.叙事, "zhuqing", FragmentSource.NPC对话),
+                ("fragment_danggui_third", "归处",
+                    "当归做了一种叫「归处」的茶。不是药，也不是茶——是中间的那个东西。她说：「有些伤不是治好的——是有人愿意等你，才好的。」她的手不再抖了。她的药不再苦了。她找到了归处。",
+                    5, FragmentType.记忆, "danggui", FragmentSource.NPC对话),
+                ("fragment_yunhelao_third", "三百年后的灯",
+                    "云鹤老把三颗鹤羽珠留在了茶馆。他说：「珠子这种东西——有人珍惜它，它才有光。」三百年前他在归雁楼底下弹琴，一只白鹤从水底飞出来。三百年后他把珠子放在你的窗台上。等待不是站在原地——是一边等，一边给这座山讲故事。",
+                    5, FragmentType.记忆, "yunhelao", FragmentSource.NPC对话),
+
+                // ━━━ 秘密结局碎片 ━━━
+                ("fragment_heart_of_mountain", "山之心",
+                    "四道光汇成一片。九座楼台回来了——不是重建的，是它们一直在那里，只是被遗忘了。茶馆的灯亮着。门开着。山的心跳在茶杯里荡漾。你听见了——「随时欢迎。」",
+                    9, FragmentType.彩蛋, "", FragmentSource.拼图解锁),
             };
 
             foreach (var (id, title, content, chapter, type, npc, source) in defaults)

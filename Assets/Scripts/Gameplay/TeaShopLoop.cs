@@ -133,6 +133,10 @@ namespace TeaMist.Gameplay
             // 茶馆经营：新的一天
             TeaHouseManager.Instance?.OnNewDay();
 
+            // 检查秘密结局触发条件
+            if (CheckSecretEnding())
+                return;
+
             // 生成今日 NPC 来访计划（日程驱动）
             var season = SeasonManager.Instance != null ? SeasonManager.Instance.CurrentSeason : Season.Spring;
             var weather = ConvertWeather(WeatherManager.Instance?.CurrentWeather ?? WeatherType.晴);
@@ -282,6 +286,23 @@ namespace TeaMist.Gameplay
         private static string GetNPCScriptName(string npcId)
         {
             int visitCount = Core.NarrativeStateManager.Instance?.GetVisitCount(npcId) ?? 1;
+            int affection = Core.NarrativeStateManager.Instance?.GetAffection(npcId) ?? 0;
+
+            // 第三次来访（高好感度）→ 深度线剧本
+            if (visitCount == 3 && affection >= 40)
+            {
+                string thirdName = npcId switch
+                {
+                    "bailu"    => "bai_lu_third_visit",
+                    "zhuqing"  => "zhuqing_third_visit",
+                    "danggui"  => "danggui_third_visit",
+                    "yunhelao" => "yunhelao_third_visit",
+                    _          => null
+                };
+
+                if (thirdName != null && Resources.Load<TextAsset>($"Yarn/Characters/{thirdName}") != null)
+                    return thirdName;
+            }
 
             // 第三次及以后 → 日常闲聊剧本（季节/天气/好感度分支）
             if (visitCount >= 3)
@@ -403,6 +424,41 @@ namespace TeaMist.Gameplay
             Debug.Log($"[TeaShopLoop] 碎片掉落: {fragmentId} ({reason})");
 #endif
             OnFragmentDrop(fragmentId, "");
+        }
+
+        /// <summary>检查秘密结局触发条件</summary>
+        private bool CheckSecretEnding()
+        {
+            var nsm = Core.NarrativeStateManager.Instance;
+            if (nsm == null) return false;
+
+            // 条件1：四位核心NPC好感度均>=60
+            string[] coreNPCs = { "bailu", "zhuqing", "danggui", "yunhelao" };
+            foreach (var npc in coreNPCs)
+            {
+                if (nsm.GetAffection(npc) < 60) return false;
+            }
+
+            // 条件2：收集了四位核心NPC的三次来访碎片
+            var collected = nsm.GetCollectedFragments();
+            string[] requiredFragments = {
+                "fragment_bailu_third", "fragment_zhuqing_third",
+                "fragment_danggui_third", "fragment_yunhelao_third"
+            };
+            foreach (var fid in requiredFragments)
+            {
+                if (!collected.Contains(fid)) return false;
+            }
+
+            // 条件3：尚未触发过秘密结局
+            if (collected.Contains("fragment_heart_of_mountain")) return false;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log("[TeaShopLoop] ★ 秘密结局触发：山之心 ★");
+#endif
+            // 直接播放秘密结局剧本
+            Dialogue.DialogueManager.Instance?.StartDialogue("secret_heart_of_mountain");
+            return true;
         }
 
         /// <summary>季节变化时掉落季节限定碎片</summary>
