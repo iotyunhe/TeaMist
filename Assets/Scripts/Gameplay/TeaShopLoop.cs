@@ -123,6 +123,8 @@ namespace TeaMist.Gameplay
 
             // 清晨开门音效
             Core.AudioManager.Instance?.PlayDayStart();
+            // 开始茶馆日常 BGM
+            Core.AudioManager.Instance?.PlayTeahouseBGM();
 
             // 茶馆经营：新的一天
             TeaHouseManager.Instance?.OnNewDay();

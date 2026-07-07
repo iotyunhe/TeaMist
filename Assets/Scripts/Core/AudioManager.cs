@@ -4,9 +4,14 @@ using TeaMist.Data;
 namespace TeaMist.Core
 {
     /// <summary>
-    /// 音频管理器 — 环境音效骨架。
-    /// 当前使用空 Clip 占位，策划可后续替换为实际音频资源。
-    /// 切换场景/时间/天气时平滑过渡环境音。
+    /// 音频管理器 — 环境音 + BGM + 音效 完整系统。
+    /// 
+    /// 功能：
+    /// - 环境音：昼夜/天气/季节自动切换，交叉淡出
+    /// - BGM：场景音乐，情绪联动，交叉淡出
+    /// - 音效：门铃/泡茶/碎片/UI 等交互音效
+    /// - 程序化音频：无实际音频文件时自动生成占位音效
+    /// - 音量控制：主音量/环境音/BGM/音效 独立控制
     /// </summary>
     public class AudioManager : MonoBehaviour
     {
@@ -18,6 +23,13 @@ namespace TeaMist.Core
         public AudioClip ambientNight;    // 夜间：寂静+偶尔风声
         public AudioClip ambientRain;     // 雨天：雨声+屋檐滴水
         public AudioClip ambientSnow;     // 雪天：寂静+踏雪声
+
+        [Header("━━━ BGM ━━━")]
+        public AudioClip bgmTeahouse;     // 茶馆日常 BGM
+        public AudioClip bgmDialogue;     // 对话 BGM
+        public AudioClip bgmBrewing;     // 泡茶 BGM
+        public AudioClip bgmEmotional;    // 情感场景 BGM
+        public AudioClip bgmTitle;        // 标题画面 BGM
 
         [Header("━━━ 音效（占位）━━━")]
         public AudioClip doorBell;        // 门铃：客人进店
@@ -43,18 +55,25 @@ namespace TeaMist.Core
         public float ambientVolume = 0.6f;
         [Range(0f, 1f)]
         public float sfxVolume = 0.8f;
+        [Range(0f, 1f)]
+        public float bgmVolume = 0.4f;
         [Range(0.5f, 3f)]
         public float crossFadeDuration = 1.5f;
 
         private AudioSource _ambientSource;
         private AudioSource _ambientSourceB;   // 用于交叉淡出
+        private AudioSource _bgmSource;
+        private AudioSource _bgmSourceB;       // BGM 交叉淡出
         private AudioSource _sfxSource;
         private bool _usingSourceA = true;
+        private bool _usingBgmA = true;
+        private string _currentBgmName;        // 当前 BGM 名称
 
         // PlayerPrefs keys
         private const string KEY_MASTER  = "Audio_Master";
         private const string KEY_AMBIENT = "Audio_Ambient";
         private const string KEY_SFX     = "Audio_SFX";
+        private const string KEY_BGM     = "Audio_BGM";
 
         void Awake()
         {
@@ -77,6 +96,16 @@ namespace TeaMist.Core
             _ambientSourceB.volume = 0f;
             _ambientSourceB.playOnAwake = false;
 
+            _bgmSource = gameObject.AddComponent<AudioSource>();
+            _bgmSource.loop = true;
+            _bgmSource.volume = 0f;
+            _bgmSource.playOnAwake = false;
+
+            _bgmSourceB = gameObject.AddComponent<AudioSource>();
+            _bgmSourceB.loop = true;
+            _bgmSourceB.volume = 0f;
+            _bgmSourceB.playOnAwake = false;
+
             _sfxSource = gameObject.AddComponent<AudioSource>();
             _sfxSource.loop = false;
             _sfxSource.playOnAwake = false;
@@ -89,6 +118,10 @@ namespace TeaMist.Core
             masterVolume  = SaveManager.LoadSettingFloat(KEY_MASTER, 0.7f);
             ambientVolume = SaveManager.LoadSettingFloat(KEY_AMBIENT, 0.6f);
             sfxVolume     = SaveManager.LoadSettingFloat(KEY_SFX, 0.8f);
+            bgmVolume     = SaveManager.LoadSettingFloat(KEY_BGM, 0.4f);
+
+            // 生成程序化占位音频（当 Inspector 未配置实际音频时）
+            GenerateProceduralAudio();
 
             // 默认播放白天环境音
             PlayAmbient(ambientDay);
@@ -98,7 +131,10 @@ namespace TeaMist.Core
             {
                 TimeManager.Instance.OnGameHourChanged += OnHourChanged;
                 TimeManager.Instance.OnSeasonChanged += OnSeasonChanged;
+                TimeManager.Instance.OnWeatherChanged += OnWeatherChanged;
             }
+
+            Debug.Log("[AudioManager] 音频系统初始化完成（含程序化占位音频）");
         }
 
         void OnDestroy()
@@ -107,6 +143,7 @@ namespace TeaMist.Core
             {
                 TimeManager.Instance.OnGameHourChanged -= OnHourChanged;
                 TimeManager.Instance.OnSeasonChanged -= OnSeasonChanged;
+                TimeManager.Instance.OnWeatherChanged -= OnWeatherChanged;
             }
         }
 
@@ -130,6 +167,15 @@ namespace TeaMist.Core
                 _ambientSourceB.volume = masterVolume * ambientVolume;
         }
 
+        /// <summary>设置BGM音量（0-1），相对于主音量</summary>
+        public void SetBGMVolume(float v)
+        {
+            bgmVolume = Mathf.Clamp01(v);
+            _bgmSource.volume = masterVolume * bgmVolume;
+            if (_bgmSourceB.isPlaying)
+                _bgmSourceB.volume = masterVolume * bgmVolume;
+        }
+
         /// <summary>设置音效音量（0-1），相对于主音量</summary>
         public void SetSFXVolume(float v)
         {
@@ -144,7 +190,36 @@ namespace TeaMist.Core
             StartCoroutine(CrossFadeAmbient(clip));
         }
 
-        /// <summary>播放一次性音效</summary>
+        /// <summary>播放/切换 BGM（交叉淡出）</summary>
+        public void PlayBGM(AudioClip clip, string bgmName = "")
+        {
+            if (clip == null) return;
+            if (_currentBgmName == bgmName && !string.IsNullOrEmpty(bgmName)) return;
+            _currentBgmName = bgmName;
+            StopAllCoroutines();
+            StartCoroutine(CrossFadeBGM(clip));
+        }
+
+        /// <summary>停止 BGM（淡出）</summary>
+        public void StopBGM(float fadeTime = 1f)
+        {
+            _currentBgmName = "";
+            StartCoroutine(FadeOutBGM(fadeTime));
+        }
+
+        /// <summary>播放茶馆日常 BGM</summary>
+        public void PlayTeahouseBGM() => PlayBGM(bgmTeahouse, "teahouse");
+
+        /// <summary>播放对话 BGM</summary>
+        public void PlayDialogueBGM() => PlayBGM(bgmDialogue, "dialogue");
+
+        /// <summary>播放泡茶 BGM</summary>
+        public void PlayBrewingBGM() => PlayBGM(bgmBrewing, "brewing");
+
+        /// <summary>播放情感场景 BGM</summary>
+        public void PlayEmotionalBGM() => PlayBGM(bgmEmotional, "emotional");
+
+        /// <summary>一次性音效播放</summary>
         public void PlaySFX(AudioClip clip, float volumeScale = 1f)
         {
             if (clip == null) return;
@@ -248,6 +323,43 @@ namespace TeaMist.Core
             else if (hour >= 17 && hour < 20) target = ambientEvening;
             else target = ambientNight;
 
+            // 天气优先：雨天/雪天覆盖昼夜环境音
+            if (WeatherManager.Instance != null)
+            {
+                var w = WeatherManager.Instance.CurrentWeather;
+                if (w == WeatherType.雨 || w == WeatherType.雷) target = ambientRain;
+                else if (w == WeatherType.雪) target = ambientSnow;
+            }
+
+            if (target != null && _ambientSource.clip != target)
+                PlayAmbient(target);
+        }
+
+        private void OnWeatherChanged(Data.WeatherType weather)
+        {
+            AudioClip target = null;
+            switch (weather)
+            {
+                case WeatherType.雨:
+                case WeatherType.雷:
+                    target = ambientRain;
+                    break;
+                case WeatherType.雪:
+                    target = ambientSnow;
+                    break;
+                default:
+                    // 晴天/多云/雾/风 → 根据时间选择
+                    if (TimeManager.Instance != null)
+                    {
+                        int hour = TimeManager.Instance.CurrentGameHour;
+                        if (hour >= 6 && hour < 17) target = ambientDay;
+                        else if (hour >= 17 && hour < 20) target = ambientEvening;
+                        else target = ambientNight;
+                    }
+                    else target = ambientDay;
+                    break;
+            }
+
             if (target != null && _ambientSource.clip != target)
                 PlayAmbient(target);
         }
@@ -288,6 +400,82 @@ namespace TeaMist.Core
             fadeOutSource.volume = 0f;
             fadeOutSource.Stop();
             fadeInSource.volume = baseVol;
+        }
+
+        private System.Collections.IEnumerator CrossFadeBGM(AudioClip newClip)
+        {
+            var fadeOutSource = _usingBgmA ? _bgmSource : _bgmSourceB;
+            var fadeInSource = _usingBgmA ? _bgmSourceB : _bgmSource;
+            _usingBgmA = !_usingBgmA;
+
+            fadeInSource.clip = newClip;
+            fadeInSource.volume = 0f;
+            fadeInSource.Play();
+
+            float baseVol = masterVolume * bgmVolume;
+            float elapsed = 0f;
+            float bgmFadeDuration = crossFadeDuration * 1.5f; // BGM 淡变稍慢
+            while (elapsed < bgmFadeDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = elapsed / bgmFadeDuration;
+                fadeOutSource.volume = baseVol * (1f - t);
+                fadeInSource.volume = baseVol * t;
+                yield return null;
+            }
+
+            fadeOutSource.volume = 0f;
+            fadeOutSource.Stop();
+            fadeInSource.volume = baseVol;
+        }
+
+        private System.Collections.IEnumerator FadeOutBGM(float fadeTime)
+        {
+            var source = _usingBgmA ? _bgmSource : _bgmSourceB;
+            float startVol = source.volume;
+            float elapsed = 0f;
+            while (elapsed < fadeTime && source.volume > 0f)
+            {
+                elapsed += Time.deltaTime;
+                source.volume = startVol * (1f - elapsed / fadeTime);
+                yield return null;
+            }
+            source.volume = 0f;
+            source.Stop();
+        }
+
+        // ━━━ 程序化音频生成 ━━━
+
+        private void GenerateProceduralAudio()
+        {
+            // 环境音占位
+            if (ambientDay == null) ambientDay = ProceduralAudio.CreateAmbientBirds();
+            if (ambientEvening == null) ambientEvening = ProceduralAudio.CreateAmbientCrickets();
+            if (ambientNight == null) ambientNight = ProceduralAudio.CreateAmbientNight();
+            if (ambientRain == null) ambientRain = ProceduralAudio.CreateAmbientRain();
+            if (ambientSnow == null) ambientSnow = ProceduralAudio.CreateAmbientNight(10f);
+
+            // BGM 占位
+            if (bgmTeahouse == null) bgmTeahouse = ProceduralAudio.CreateSimpleBGM("BGM_Teahouse", 20f, 262f);
+            if (bgmDialogue == null) bgmDialogue = ProceduralAudio.CreateSimpleBGM("BGM_Dialogue", 16f, 294f);
+            if (bgmBrewing == null) bgmBrewing = ProceduralAudio.CreateSimpleBGM("BGM_Brewing", 12f, 330f);
+            if (bgmEmotional == null) bgmEmotional = ProceduralAudio.CreateSimpleBGM("BGM_Emotional", 18f, 220f);
+
+            // 音效占位
+            if (doorBell == null) doorBell = ProceduralAudio.CreateDoorBell();
+            if (doorClose == null) doorClose = ProceduralAudio.CreateDoorClose();
+            if (teaPour == null) teaPour = ProceduralAudio.CreateWaterPour();
+            if (fragmentGet == null) fragmentGet = ProceduralAudio.CreateFragmentGet();
+            if (brewSelect == null) brewSelect = ProceduralAudio.CreateUIClick();
+            if (brewStepAdvance == null) brewStepAdvance = ProceduralAudio.CreateUIClick();
+            if (brewTempConfirm == null) brewTempConfirm = ProceduralAudio.CreateSineTone("TempConfirm", 880f, 0.15f, 0.05f, 0.3f);
+            if (brewWaterPour == null) brewWaterPour = ProceduralAudio.CreateWaterPour(2f);
+            if (brewPourTea == null) brewPourTea = ProceduralAudio.CreateWaterPour(1f);
+            if (brewResultGreat == null) brewResultGreat = ProceduralAudio.CreateFragmentGet();
+            if (brewResultGood == null) brewResultGood = ProceduralAudio.CreateSineTone("Good", 660f, 0.3f, 0.1f, 0.3f);
+            if (brewResultOk == null) brewResultOk = ProceduralAudio.CreateSineTone("Ok", 440f, 0.2f, 0.1f, 0.2f);
+
+            Debug.Log("[AudioManager] 程序化占位音频生成完成");
         }
     }
 }
