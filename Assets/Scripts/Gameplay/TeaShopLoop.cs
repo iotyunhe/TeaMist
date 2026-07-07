@@ -402,6 +402,9 @@ namespace TeaMist.Gameplay
                 Story.GossipPool.Instance?.OnGameEvent("perfect_brew", null);
             }
 
+            // 成就系统：检查泡茶成就
+            Core.AchievementManager.Instance?.CheckTeaBrewingAchievement(qualityScore);
+
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log($"[TeaShopLoop] 泡茶完成，品质: {qualityScore}/100");
 #endif
@@ -449,6 +452,10 @@ namespace TeaMist.Gameplay
             // 触发碎片收集八卦生成
             Story.GossipPool.Instance?.OnGameEvent("fragment_collected",
                 new Dictionary<string, object> { { "fragmentId", fragmentId } });
+            
+            // 成就系统：检查碎片收集成就
+            var totalFragments = Core.NarrativeStateManager.Instance?.GetCollectedFragments()?.Count ?? 0;
+            Core.AchievementManager.Instance?.CheckFragmentAchievements(totalFragments);
         }
 
         /// <summary>尝试掉落碎片（检查是否已收集）</summary>
@@ -493,6 +500,9 @@ namespace TeaMist.Gameplay
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log("[TeaShopLoop] ★ 秘密结局触发：山之心 ★");
 #endif
+            // 成就系统：解锁秘密结局成就
+            Core.AchievementManager.Instance?.CheckSecretEndingAchievement();
+            
             // 直接播放秘密结局剧本
             Dialogue.DialogueManager.Instance?.StartDialogue("secret_heart_of_mountain");
             return true;
@@ -644,6 +654,10 @@ namespace TeaMist.Gameplay
                 Debug.Log($"[TeaShopLoop] 极端天气事件触发: {weather} → {eventName}");
 #endif
                 dm.StartDialogue(eventName);
+                
+                // 成就系统：检查极端天气成就
+                Core.AchievementManager.Instance?.CheckExtremeWeatherAchievement(weather);
+                
                 return true;
             }
 
@@ -684,6 +698,10 @@ namespace TeaMist.Gameplay
                 Debug.Log($"[TeaShopLoop] 季节节点事件触发: {tm.CurrentSeason} → {eventName}");
 #endif
                 dm.StartDialogue(eventName);
+                
+                // 成就系统：检查季节节点成就
+                Core.AchievementManager.Instance?.CheckSeasonalEventAchievement();
+                
                 return true;
             }
 

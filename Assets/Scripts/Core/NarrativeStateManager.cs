@@ -148,6 +148,10 @@ namespace TeaMist.Core
             var state = EnsureNPCState(npcId);
             state.visitCount++;
             state.lastVisitDate = DateTime.Now.ToString("yyyy-MM-dd");
+            
+            // 成就系统：检查来访成就
+            Core.AchievementManager.Instance?.CheckVisitAchievements(npcId, state.visitCount);
+            Core.AchievementManager.Instance?.CheckNPCDepthAchievement(npcId, state.visitCount);
         }
 
         // ═══════════════════════════════════════════

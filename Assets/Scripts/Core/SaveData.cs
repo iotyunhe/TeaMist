@@ -59,6 +59,10 @@ namespace TeaMist.Core
         public List<string> unlockedTeaRecipes = new List<string>();
         public List<string> unlockedHerbRecipes = new List<string>();
         public List<string> collectedHerbs = new List<string>();
+
+        // ── 成就 ──
+        public List<string> unlockedAchievements = new List<string>();
+        public Dictionary<string, int> achievementCounters = new Dictionary<string, int>();
     }
 
     // ━━━ 可序列化键值对（JsonUtility 兼容） ━━━
