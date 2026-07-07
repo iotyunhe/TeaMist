@@ -1,0 +1,151 @@
+# 竹青首次来访
+# ====================
+# NPC：竹青，山中竹妖。安静寡言，正在秘密编写栖霞山志。
+# 核心话题：3种迎客 → 山志/旧仙台/清心茶 → 碎片掉落 → 结束分支
+
+start:
+
+【一个穿着青衣的女子站在门口。她的头发上沾着竹叶，袖口有墨渍。】
+【她环顾四周，目光在窗边的位置停留了很久。】
+【然后她走了进来，脚步轻得像风吹过竹林。】
+
+竹青: 这里...就是茶馆？
+竹青: 听说你会泡茶，也会...听故事？
+
+-> 请她进来坐 | set:zhuqing_approach=welcoming | jump:zhuqing_welcome
+-> 问她什么故事 | set:zhuqing_approach=story | jump:zhuqing_story
+-> 给她倒一杯清心茶 | set:zhuqing_approach=tea | jump:zhuqing_tea_direct
+
+stop:
+
+# 路线A 请她进来
+
+zhuqing_welcome:
+
+你: 进来坐吧，外面风大。窗边那个位置正好。
+竹青: （走进来，在窗边坐下）
+竹青: 我叫竹青。山上的竹子...成精了。
+竹青: 别惊讶，这种事在栖霞山不奇怪。
+你: 确实。那你怎么想到来茶馆？
+竹青: （从袖中取出一卷竹简）我在写一部山志。
+竹青: 栖霞山的故事太多了。仙人的、妖怪的、草木的、溪流的...
+竹青: 需要一个地方整理。茶馆正好——有茶，有窗，有山景。
+
+<< set affection_zhuqing=5 >>
+
+-> 问她山志写了多少 | set:zhuqing_topic=chronicle | jump:zhuqing_chronicle
+-> 问她为什么是竹子精 | set:zhuqing_topic=bamboo | jump:zhuqing_bamboo
+
+# 路线B 问故事
+
+zhuqing_story:
+
+你: 故事？这里什么故事都有。你想听谁的？
+竹青: （眼睛亮了一下）
+竹青: 那...你知道旧仙台的事吗？
+竹青: 三百年前，那里有一位仙人，等一个人等了整整十年。
+你: 等谁？
+竹青: （摇头）不知道。但那个仙人...后来变成了鹤。
+竹青: 云鹤老，你见过吗？他就是那只鹤。
+
+<< set affection_zhuqing=8 >>
+
+-> 追问旧仙台的故事 | set:zhuqing_topic=tower | jump:zhuqing_tower
+-> 问云鹤老知道这件事吗 | set:zhuqing_topic=yunhelao | jump:zhuqing_yunhelao
+
+# 路线C 直接倒茶
+
+zhuqing_tea_direct:
+
+你没有多问，只是倒了一杯清心茶，递给她。
+竹青: （接过茶杯，闻了闻）
+竹青: 清心茶？
+竹青: 你怎么知道...我想喝这个？
+你: 看你眼睛就知道，你想事情想太多了。
+竹青: （愣了一下，然后笑了）
+竹青: 也是。山志写了一半，脑子确实有点乱。
+
+<< set affection_zhuqing=6 >>
+
+jump zhuqing_tea_request
+
+zhuqing_chronicle:
+
+竹青: 写了三百年了...还没写完。
+竹青: 山里的故事太多了。每棵树、每块石头、每条溪流都有自己的故事。
+竹青: 而且...故事还在不断发生。
+你: 那你打算写到什么时候？
+竹青: （望着窗外）写到...山不再变化的时候。
+竹青: 但那大概永远不会发生吧。
+
+<< set affection_zhuqing=10 >>
+
+jump zhuqing_tea_request
+
+zhuqing_bamboo:
+
+竹青: 为什么是竹子？（想了想）因为...竹子最诚实。
+竹青: 它长得快，也折得快。但它记录的东西不会消失。
+竹青: 我在竹简上刻字，和在竹子上刻字...其实是一样的。
+竹青: 都是把记忆留下来。
+
+<< set affection_zhuqing=8 >>
+
+jump zhuqing_tea_request
+
+zhuqing_tower:
+
+竹青: 旧仙台在云肩坪上面。那里有一块很大的石头。
+竹青: 石头上刻着一首诗，但已经看不清了。
+竹青: 云鹤爷爷说...那是他等的人写的。
+竹青: 但我觉得...也许是他自己写的。写给自己看的。
+
+<< set affection_zhuqing=10 >>
+
+jump zhuqing_tea_request
+
+zhuqing_yunhelao:
+
+竹青: 他？（沉默了一会儿）
+竹青: 他大概...不记得了。活得太久，有些事就忘了。
+竹青: 但我记得。我在山志里记下来了。
+竹青: 也许有一天...我可以拿给他看。
+
+<< set affection_zhuqing=8 >>
+
+jump zhuqing_tea_request
+
+zhuqing_tea_request:
+
+竹青: 我不挑茶，清淡一点就好。
+竹青: 对了，如果你不介意...我可以给你讲讲山里的故事。
+竹青: 当作...茶资。
+
+<< drop fragment_zhuqing_first >>
+
+【一片记忆碎片从竹简中飘出——栖霞山志的某一页。】
+
+end:first_visit
+
+# ====== 天气变体 ======
+
+if: weather=晴
+
+【阳光从窗外照进来，竹青的影子投在地上，像一丛竹影。】
+【她看着地上的影子，忽然笑了。】
+
+竹青: 你看...阳光好的时候，我的影子就像真正的竹子。
+竹青: 也许...这就是我来茶馆的原因。有光，有影子，有茶。
+
+endif:
+
+if: weather=雨
+
+【雨声从屋檐传来。竹青听着雨声，手指在桌上轻轻敲击。】
+【那节奏像竹叶在风中摇曳的声音。】
+
+竹青: 下雨天...山里的竹子最开心。
+竹青: 因为雨水会帮它们洗去叶子上的灰尘。
+竹青: 我...也有点想淋雨了。
+
+endif:
