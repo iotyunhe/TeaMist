@@ -68,6 +68,7 @@ ending_good:
 【她轻轻关上门。茶壶里的薄荷叶还浮在水面，绿得像一小片不会散的夏天。】
 
 << set affection_danggui=35 >>
+<< drop fragment_danggui_heal_time >>
 
 end_second:
 

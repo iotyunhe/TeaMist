@@ -56,6 +56,7 @@ ending_good:
 【那枚竹叶的叶尖。恰好指着纸上最后一行字——「此后茶馆灯火日日不灭。」】
 
 << set affection_zhuqing=35 >>
+<< drop fragment_zhuqing_self_secret >>
 
 end_second:
 

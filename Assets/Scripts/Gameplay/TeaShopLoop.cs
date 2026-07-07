@@ -75,7 +75,10 @@ namespace TeaMist.Gameplay
         void OnDestroy()
         {
             if (Core.TimeManager.Instance != null)
+            {
                 Core.TimeManager.Instance.OnGameHourChanged -= OnNewHour;
+                Core.TimeManager.Instance.OnSeasonChanged -= OnSeasonFragmentDrop;
+            }
         }
 
         void Start()
@@ -105,6 +108,7 @@ namespace TeaMist.Gameplay
             if (Core.TimeManager.Instance != null)
             {
                 Core.TimeManager.Instance.OnGameHourChanged += OnNewHour;
+                Core.TimeManager.Instance.OnSeasonChanged += OnSeasonFragmentDrop;
             }
 
             // 开始第一天
@@ -336,6 +340,13 @@ namespace TeaMist.Gameplay
             Core.AudioManager.Instance?.PlayTeaPour();
             // 茶馆声望：泡茶经验
             TeaHouseManager.Instance?.OnTeaBrewed(qualityScore);
+
+            // 完美泡茶碎片（品质>=95）
+            if (qualityScore >= 95)
+            {
+                TryDropFragment("fragment_tea_perfect", "泡茶完美品质");
+            }
+
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log($"[TeaShopLoop] 泡茶完成，品质: {qualityScore}/100");
 #endif
@@ -380,6 +391,34 @@ namespace TeaMist.Gameplay
             Core.AudioManager.Instance?.PlayFragmentGet();
             // 茶馆声望经验
             TeaHouseManager.Instance?.OnFragmentCollected(fragmentId);
+        }
+
+        /// <summary>尝试掉落碎片（检查是否已收集）</summary>
+        private void TryDropFragment(string fragmentId, string reason)
+        {
+            var collected = Core.NarrativeStateManager.Instance?.GetCollectedFragments();
+            if (collected != null && collected.Contains(fragmentId)) return;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log($"[TeaShopLoop] 碎片掉落: {fragmentId} ({reason})");
+#endif
+            OnFragmentDrop(fragmentId, "");
+        }
+
+        /// <summary>季节变化时掉落季节限定碎片</summary>
+        private void OnSeasonFragmentDrop(Data.Season season)
+        {
+            string fragmentId = season switch
+            {
+                Data.Season.春 => "fragment_spring_dawn",
+                Data.Season.夏 => "fragment_summer_night",
+                Data.Season.秋 => "fragment_autumn_moon",
+                Data.Season.冬 => "fragment_winter_snow",
+                _ => null
+            };
+
+            if (!string.IsNullOrEmpty(fragmentId))
+                TryDropFragment(fragmentId, $"季节变化: {season}");
         }
 
         private void EndCustomerVisit()

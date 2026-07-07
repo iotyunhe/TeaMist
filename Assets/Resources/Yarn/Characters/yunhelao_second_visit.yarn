@@ -106,6 +106,7 @@ ending:
 云鹤老: 灯亮着。会有人来找的。
 
 << set affection_yunhelao=30 >>
+<< drop fragment_yunhelao_return >>
 
 end_second:
 

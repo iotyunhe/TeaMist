@@ -55,6 +55,7 @@ ending_good:
 【门关上了。桌上剩了几颗野莓，红得像小小的灯笼。】
 
 << set affection_bailu=48 >>
+<< drop fragment_bailu_return >>
 
 end_second:
 

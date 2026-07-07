@@ -59,6 +59,7 @@ ending:
 【不是一个字。是一扇小小的、歪歪扭扭的窗。窗户里面，亮着一点光。】
 
 << set affection_xiaoshan=30 >>
+<< drop fragment_xiaoshan_return >>
 
 end_second:
 
